@@ -1,0 +1,71 @@
+---
+title: "Multi-Wallet Support on Fibe: Connect Up to 10 Wallets"
+sidebarTitle: "Multi-Wallet"
+description: "Connect multiple Solana wallets to Fibe and switch between them instantly. View aggregate or per-wallet balances from a single dashboard."
+---
+
+Fibe lets you connect and actively use multiple Solana wallets from a single interface, without logging out or switching browser profiles. Whether you run separate wallets for spot trading, perpetual futures, and long-term holdings, or you want to monitor a cold wallet alongside a hot wallet, Fibe's multi-wallet dashboard keeps everything visible and accessible in one place.
+
+## Adding a Second Wallet
+
+<Steps>
+  <Step title="Open the wallet selector">
+    Click your wallet address or avatar in the **top-right corner** of the Fibe header bar. A dropdown appears showing your currently connected wallet.
+  </Step>
+  <Step title="Choose 'Add Wallet'">
+    At the bottom of the wallet dropdown, click **+ Add Wallet**. Fibe opens the standard wallet connection modal.
+  </Step>
+  <Step title="Connect a new wallet provider">
+    Select the wallet provider you want to add (e.g., Phantom, Backpack, Solflare, Ledger). Follow the prompts in the wallet extension to approve the connection. The new wallet address is added to your wallet list immediately.
+  </Step>
+  <Step title="Label the wallet (optional)">
+    After connecting, click the **pencil icon** next to the new wallet address in the wallet selector dropdown to give it a custom label (e.g., "Trading Wallet", "Cold Storage"). Labels only appear in the Fibe interface and are not stored on-chain.
+  </Step>
+</Steps>
+
+<Note>
+  Each wallet you connect trades independently. Orders placed while a particular wallet is active are signed by that wallet's keypair and recorded on-chain under that address. Switching wallets does not transfer balances or move open orders between addresses.
+</Note>
+
+## Switching Between Wallets
+
+Click your wallet indicator in the top-right header bar at any time. Your connected wallets are listed with their labels (or shortened addresses) and current SOL balances. Click any wallet in the list to make it the **active wallet**. The dashboard, portfolio view, order book, and open positions all update immediately to reflect the selected wallet.
+
+The active wallet is always shown in the header bar. Trades, order placements, and withdrawals always apply to the currently active wallet.
+
+## Portfolio View Across Wallets
+
+Fibe offers two portfolio viewing modes when multiple wallets are connected:
+
+<CardGroup cols={2}>
+  <Card title="Aggregate View" icon="chart-pie">
+    Combines balances and positions across all your connected wallets into a single total portfolio value. Useful for understanding your overall exposure and net worth across all accounts at a glance.
+  </Card>
+  <Card title="Per-Wallet View" icon="wallet">
+    Displays holdings, open orders, and trade history for the currently active wallet only. Switch between wallets using the header selector to drill into each account individually.
+  </Card>
+</CardGroup>
+
+Toggle between views using the **View** selector at the top of the **Portfolio** page. Your preference is saved between sessions.
+
+## Removing a Wallet
+
+To disconnect a wallet from your Fibe dashboard, open the wallet selector dropdown, hover over the wallet you want to remove, and click the **✕ Remove** icon. Removing a wallet from Fibe does not affect the wallet itself or any on-chain assets — it simply stops displaying that address in your Fibe interface. You can reconnect it at any time.
+
+<Tip>
+  Consider using dedicated wallets for different strategies to keep your risk isolated. For example: one wallet for high-frequency spot trading, one for perpetual futures positions, and one read-only tracking wallet for your long-term holdings. This makes it easy to analyse performance per strategy and limits exposure if any single wallet is compromised.
+</Tip>
+
+## Frequently Asked Questions
+
+<Accordion title="Is there a limit to how many wallets I can connect?">
+  Fibe supports connecting up to **10 wallets** simultaneously to a single Fibe account. If you need to manage more wallets, you can remove unused wallets and add new ones at any time.
+</Accordion>
+
+<Accordion title="Can I trade from the aggregate view?">
+  No. To place a trade or withdraw funds, you must select a specific active wallet using the wallet selector. The aggregate view is read-only and intended for portfolio monitoring. This prevents accidental trades from the wrong wallet.
+</Accordion>
+
+<Accordion title="Do all wallets need to use the same wallet provider?">
+  No. You can mix wallet providers — for example, connect a Phantom wallet and a Backpack wallet simultaneously. Each connection is managed independently by the respective browser extension.
+</Accordion>

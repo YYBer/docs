@@ -1,0 +1,58 @@
+---
+title: "Fibe Pulse: Real-Time On-Chain Market Intelligence"
+sidebarTitle: "Pulse"
+description: "Fibe Pulse surfaces trending tokens, volume spikes, wallet activity, and on-chain signals in real time — before they hit mainstream attention."
+---
+
+Pulse is Fibe's real-time market intelligence feed. While most traders are reacting to price moves they see in the news, Pulse is already showing you the on-chain and social signals that preceded those moves — unusual volume building on a previously quiet token, a cluster of smart-money wallets accumulating a new asset, or social momentum accelerating faster than the price has yet reflected. Pulse is designed to give you an information edge, not just a faster scoreboard.
+
+## What Pulse shows you
+
+Pulse aggregates signals from multiple data sources and presents them in a single, scannable feed. Each signal card shows the token involved, the type of signal, its intensity, and how recently it appeared.
+
+<CardGroup cols={2}>
+  <Card title="Trending Tokens" icon="fire-flame-curved">
+    Tokens experiencing a sharp increase in search interest, trading activity, or mention frequency across tracked sources. Trending signals update in real time and are ranked by signal strength, not just raw volume.
+  </Card>
+  <Card title="Volume Spikes" icon="bolt">
+    Alerts when a token's trading volume deviates significantly from its recent baseline — a classic precursor to a sustained price move. Spike magnitude and direction (buy-side vs. sell-side pressure) are both shown.
+  </Card>
+  <Card title="Wallet Activity Alerts" icon="wallet">
+    Notifications when influential or historically active wallets interact with a token — initiating a new position, adding to an existing one, or exiting. Useful for tracking smart-money behaviour without needing to monitor individual wallets manually.
+  </Card>
+  <Card title="Social Momentum" icon="users">
+    A score reflecting the velocity of organic social discussion around a token across tracked platforms. Rising social momentum ahead of a price move can indicate growing retail interest before it reaches the orderbook.
+  </Card>
+</CardGroup>
+
+## How signals are generated
+
+Pulse signals are derived from a combination of on-chain data and tracked social activity. On the on-chain side, Fibe continuously monitors transaction patterns, wallet clustering, liquidity changes, and orderbook behaviour across supported tokens on Solana. On the social side, Pulse tracks mention velocity and sentiment shifts across major platforms. These two streams are combined and run through Fibe's signal-detection layer, which filters out noise and surfaces only anomalies that cross meaningful thresholds — so you see actionable signals, not every minor fluctuation.
+
+<Info>
+  Pulse signals are informational and do not constitute financial advice. Signal strength reflects statistical anomalies relative to a token's own history and peers — it does not predict future price direction. Always conduct your own research before trading.
+</Info>
+
+## How to use Pulse
+
+<Steps>
+  <Step title="Open the Pulse tab">
+    Click **Pulse** in the Fibe top navigation bar. The feed loads with the most recent signals at the top, ordered by recency by default.
+  </Step>
+  <Step title="Filter by signal type">
+    Use the filter bar beneath the tab header to narrow the feed to specific signal categories: **Volume Spikes**, **Wallet Activity**, **Trending**, or **Social Momentum**. You can select multiple filters at once. Click any active filter to deselect it.
+  </Step>
+  <Step title="Adjust the time window">
+    By default, Pulse shows signals from the last hour. Use the time selector to expand the view to the last 6 hours, 24 hours, or 7 days — useful for spotting patterns that develop over longer periods.
+  </Step>
+  <Step title="Click through to a token">
+    Click any signal card to open the full token detail page. From there you can review price history, orderbook depth, recent trades, and wallet activity before deciding whether to act.
+  </Step>
+  <Step title="Set signal alerts (optional)">
+    Click the bell icon on any signal card or token page to subscribe to future Pulse alerts for that token. Alerts are delivered as in-app notifications so you don't need to keep Pulse open to stay informed.
+  </Step>
+</Steps>
+
+<Tip>
+  Combine Pulse with [Wallet Tracking](/portfolio/wallet-tracking) for the fullest picture. When Pulse flags unusual wallet activity on a token, open the Wallet Tracker to see exactly which wallets are involved and what their historical track record looks like — turning a signal into actionable intelligence in seconds.
+</Tip>

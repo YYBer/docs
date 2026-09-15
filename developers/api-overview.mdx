@@ -1,0 +1,193 @@
+---
+title: "Fibe Developer API Overview: REST, WebSocket, and On-Chain"
+sidebarTitle: "API Overview"
+description: "Explore the Fibe developer API — a public REST Info API for market data and a Solana-based Exchange Client for on-chain order management."
+---
+
+Fibe exposes two complementary interfaces for programmatic access: a public REST API (the Info API) that gives you read-only access to real-time and historical market data, and a Solana-based Exchange Client that executes trades directly on-chain through the Fibe smart contract. Together they cover everything from price feeds and order books to placing, modifying, and cancelling orders — no centralised custody required.
+
+## Two-Component Architecture
+
+The Fibe developer platform is split into two distinct components with different access patterns and purposes.
+
+<CardGroup cols={2}>
+  <Card title="Info API (REST)" icon="database">
+    A standard HTTP GET API for reading market data. All endpoints are publicly accessible — no authentication or API key is required. Use it to retrieve prices, order books, candle data, recent trades, and user order history.
+  </Card>
+  <Card title="Exchange Client (On-Chain)" icon="link">
+    A Solana smart contract client for executing trades. Placing, modifying, and cancelling orders are on-chain operations signed by your Solana wallet keypair. No order is routed through a centralised server.
+  </Card>
+</CardGroup>
+
+| Capability | Info API | Exchange Client |
+|---|---|---|
+| Market data | ✅ | — |
+| Order book | ✅ | — |
+| Candles & trades | ✅ | — |
+| User order history | ✅ | — |
+| Place orders | — | ✅ |
+| Cancel / modify orders | — | ✅ |
+| Authentication required | No | Solana wallet keypair |
+
+## Base URLs
+
+Use these endpoints for Mainnet. A Testnet environment is also available for development and integration testing.
+
+| Network | REST | WebSocket |
+|---------|------|-----------|
+| Mainnet | `https://api.fibe.com` | `wss://api.fibe.com/ws` |
+| Testnet | `https://api.fibe-testnet.com` | `wss://api.fibe-testnet.com/ws` |
+
+All REST Info API routes are prefixed with `/api/v1`, for example `https://api.fibe.com/api/v1/markets`.
+
+## Quick Start
+
+Install the SDK and create both clients in under a minute. The API client handles all REST calls; the Exchange Client wraps the Solana smart contract.
+
+```bash
+npm install @fibe/sdk
+# or
+yarn add @fibe/sdk
+```
+
+```typescript
+import { api, exchange } from '@fibe/sdk';
+import { Connection, Keypair } from '@solana/web3.js';
+
+// ── Info API client (no authentication required) ──────────────────────────
+const apiClient = api.createApiClient('https://api.fibe.com');
+
+// Fetch all markets
+const markets = await apiClient.getMarkets();
+console.log(markets[0].market); // "SOL-USDC"
+
+// Fetch mid prices for every market
+const mids = await apiClient.getAllMids();
+console.log(mids['0']); // e.g. "103.45"
+
+// ── Exchange Client (requires a Solana wallet) ────────────────────────────
+const connection = new Connection('https://api.mainnet-beta.solana.com');
+
+const exchangeClient = new exchange.ExchangeClient(
+  connection,
+  'confirmed', // commitment level
+  apiClient
+);
+```
+
+<Note>
+  The Exchange Client does not make network calls to Fibe servers for order submission. Transactions are built locally, signed with your wallet, and submitted directly to the Solana network.
+</Note>
+
+## Key Concepts
+
+Understanding these building blocks will help you use every part of the API correctly.
+
+<Accordion title="Market Index">
+  Every trading pair on Fibe is identified by a unique integer called the `marketIndex`. Use `GET /api/v1/markets` to retrieve the full list and map human-readable names (e.g., `"SOL-USDC"`) to their indices.
+
+  ```typescript
+  const markets = await apiClient.getMarkets();
+  // [{ market: "SOL-USDC", marketIndex: 0, ... }, ...]
+  ```
+</Accordion>
+
+<Accordion title="Tick Size and Lot Size">
+  **Tick Size** (`tickSizeInQuoteBaseUnits`) is the minimum price increment expressed in raw quote token units (before applying `quoteDecimals`). All order prices must be exact multiples of the tick size.
+
+  **Lot Size** (`lotSizeInBaseBaseUnits`) is the minimum quantity increment expressed in raw base token units (before applying `baseDecimals`). All order quantities must be exact multiples of the lot size.
+
+  ```typescript
+  const market = await apiClient.getMarket({ marketIndex: 0 });
+  // tickSizeInQuoteBaseUnits: 100  → 0.0001 USDC with 6 decimals
+  // lotSizeInBaseBaseUnits: 1000000 → 0.001 SOL with 9 decimals
+  ```
+</Accordion>
+
+<Accordion title="Order ID">
+  Each order requires a unique `orderId` of type `bigint`. The most common approach is to use the current Unix timestamp in milliseconds. Ensure no two active orders share the same ID.
+
+  ```typescript
+  const orderId = BigInt(Date.now());
+  ```
+</Accordion>
+
+<Accordion title="Side: Bid and Ask">
+  Orders and trades carry a `side` field that uses single-character string values:
+
+  | Value | Enum | Meaning |
+  |-------|------|---------|
+  | `"B"` | `Side.Bid` | Buy — you want to acquire the base token |
+  | `"A"` | `Side.Ask` | Sell — you want to sell the base token |
+</Accordion>
+
+<Accordion title="Time in Force">
+  Time in Force (TIF) controls the execution behaviour of an order. The `TimeInForce` enum provides four options:
+
+  | Value | Description |
+  |-------|-------------|
+  | `Gtc` | **Good-till-Cancelled** — stays open until filled or explicitly cancelled. This is the default for limit orders. |
+  | `Ioc` | **Immediate-or-Cancel** — fills whatever quantity is available at the time of placement, then cancels the remainder. Used automatically for market orders. |
+  | `PostOnly` | **Post-Only** — the order is only accepted if it adds liquidity to the book. It is cancelled immediately if it would match an existing order. |
+  | `Fok` | **Fill-or-Kill** — the entire order must be filled immediately or it is cancelled in full. |
+</Accordion>
+
+## Response Format
+
+The Info API returns data directly in the response body on success. Errors always include an `error` string field so you can handle them programmatically.
+
+<Tabs>
+  <Tab title="Success">
+    A successful response returns the requested resource directly at the top level (object or array):
+
+    ```json
+    {
+      "market": "SOL-USDC",
+      "marketIndex": 0,
+      "baseMint": "So11111111111111111111111111111111111111112",
+      "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "baseDecimals": 9,
+      "quoteDecimals": 6,
+      "tickSizeInQuoteBaseUnits": 100,
+      "lotSizeInBaseBaseUnits": 1000000
+    }
+    ```
+  </Tab>
+  <Tab title="Error">
+    All error responses use a consistent envelope with a human-readable message:
+
+    ```json
+    {
+      "error": "Market not found"
+    }
+    ```
+
+    | HTTP Status | Meaning |
+    |-------------|---------|
+    | `400` | Bad Request — missing or invalid parameters |
+    | `404` | Not Found — the requested resource does not exist |
+    | `429` | Too Many Requests — you have exceeded the rate limit |
+    | `500` | Internal Server Error — something went wrong on Fibe's side |
+  </Tab>
+</Tabs>
+
+<Info>
+  All numeric values returned by the Info API (prices, sizes, volumes) are encoded as **strings** to preserve full decimal precision and avoid floating-point rounding errors. Parse them with `parseFloat()` or a decimal library as needed.
+</Info>
+
+## Explore the Developer Docs
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/developers/authentication">
+    Learn how the Info API requires no credentials, and how to wire up your Solana keypair for the Exchange Client.
+  </Card>
+  <Card title="Rate Limits" icon="gauge" href="/developers/rate-limits">
+    Understand the 1200-weight-per-minute REST budget, per-endpoint weights, and WebSocket connection limits.
+  </Card>
+  <Card title="TypeScript SDK" icon="code" href="/developers/typescript-sdk">
+    Full reference for every SDK method, type, and enum — with examples for both the API client and Exchange Client.
+  </Card>
+  <Card title="API Reference" icon="book" href="/developers/api-reference">
+    Complete endpoint-by-endpoint REST documentation with parameters, response shapes, and curl examples.
+  </Card>
+</CardGroup>

@@ -1,0 +1,93 @@
+---
+title: "Solana Network Fees: Budgeting SOL When Using Fibe"
+sidebarTitle: "Network Fees"
+description: "Learn how Solana network fees apply to swaps, orders, and withdrawals on Fibe — and how to keep enough SOL to avoid failed transactions."
+---
+
+Every transaction you send through Fibe — including token swaps, limit order placements, order cancellations, perpetual trades, and withdrawals — must be processed by the Solana network. Solana validators charge a small fee in **SOL** to include your transaction in a block. This network fee is entirely separate from [Fibe's platform fee](/fees/fibe-fees) and is paid directly to the validator, not to Fibe. Understanding how these fees work helps you budget your SOL balance and avoid unexpected transaction failures.
+
+## How Solana Fees Work
+
+Solana's transaction fee model has two components:
+
+### Base Fee
+
+Every transaction pays a **base fee** of approximately **0.000005 SOL per signature**. Most Fibe transactions require one signature (your wallet), so the base cost is negligible. Transactions that involve multiple instructions or accounts may require additional signatures and therefore pay a proportionally higher base fee.
+
+### Priority Fee
+
+On top of the base fee, you can attach a **priority fee** (also called a compute unit price) to incentivise validators to include your transaction faster. Priority fees are denominated in **micro-lamports per compute unit** and are set according to current network demand.
+
+- When the Solana network is **lightly loaded**, transactions typically land within one or two slots without any priority fee.
+- During **network congestion** — for example, during high-volume token launches or major market events — a priority fee significantly increases the chance that your transaction is confirmed quickly rather than dropped.
+
+Fibe monitors network conditions in real time and **automatically applies a recommended priority fee** when congestion is detected. You can review and adjust the priority fee in **Settings → Network → Priority Fee** before submitting a transaction.
+
+<Note>
+  Solana network fees are determined entirely by the Solana protocol and current validator demand. Fibe has no control over, and does not profit from, the network fees you pay.
+</Note>
+
+## Estimated Fee Ranges
+
+The table below shows approximate network fee ranges for common Fibe actions. Actual costs depend on real-time network conditions and the compute complexity of each instruction.
+
+| Action | Approximate Network Fee (SOL) |
+|--------|-------------------------------|
+| Token swap (single hop) | 0.00001 – 0.00005 SOL |
+| Token swap (multi-hop) | 0.00003 – 0.00010 SOL |
+| Limit order placement | ~0.00002 SOL |
+| Market order placement | ~0.00002 SOL |
+| Order cancellation | ~0.000005 SOL |
+| Withdrawal / transfer | ~0.000005 SOL |
+| Perpetual position open/close | 0.00002 – 0.00005 SOL |
+
+<Note>
+  These are approximate ranges under normal network conditions. During periods of high congestion, priority fees can increase the total cost by an order of magnitude. Always review the fee estimate shown in the transaction confirmation screen.
+</Note>
+
+## Priority Fee Settings
+
+Fibe exposes three priority fee presets and a custom mode:
+
+<Tabs>
+  <Tab title="Auto (Recommended)">
+    Fibe monitors on-chain fee data and selects an optimal priority fee automatically. This is the default setting and suits most users. During low-traffic periods the priority fee approaches zero; during congestion it scales up to keep your transactions competitive.
+  </Tab>
+  <Tab title="Fast">
+    Applies a fixed elevated priority fee to ensure rapid inclusion regardless of network state. Use this preset when speed is critical — for example, when responding to a fast-moving market opportunity.
+  </Tab>
+  <Tab title="Economy">
+    Sets a minimal priority fee to reduce costs. Suitable for non-time-sensitive actions such as cancelling a resting order or transferring tokens when you are not in a hurry. Transactions may take longer to confirm during congestion.
+  </Tab>
+  <Tab title="Custom">
+    Lets you specify an exact compute unit price in micro-lamports. Use this if you have a specific cost target or are running automated strategies via the [Fibe API](/developers/api-overview).
+  </Tab>
+</Tabs>
+
+To change your priority fee preset, open **Settings → Network → Priority Fee** in the Fibe app and select your preferred option.
+
+## Keeping Enough SOL for Fees
+
+Network fees are paid from the SOL balance in your connected wallet. If your SOL balance drops too low, transactions will fail before they reach the network.
+
+<Warning>
+  **Always maintain a SOL balance in your connected wallet.** If your wallet has insufficient SOL to cover network fees, your transaction will fail and no trade or swap will be executed. You will not lose funds, but you may miss time-sensitive opportunities.
+</Warning>
+
+<Tip>
+  Keep at least **0.01 SOL** in your wallet as a dedicated fee buffer. This comfortably covers dozens of typical transactions and gives you headroom during periods of elevated priority fees. If you trade frequently or run automated strategies, consider maintaining a buffer of **0.05 SOL or more**.
+</Tip>
+
+## Rent and Account Creation Fees
+
+Solana requires a small **rent-exempt deposit** when you open a new token account (for example, the first time you hold a particular SPL token in your wallet). This deposit — typically around **0.00203928 SOL** — is locked in the account as long as it exists and is **fully refundable** when you close the account.
+
+Fibe will warn you before any action that requires opening a new token account, so you are never surprised by an unexpected SOL deduction.
+
+<Accordion title="What happens if my transaction fails due to low SOL?">
+  If your wallet does not have enough SOL to pay the network fee, the transaction is rejected before it is broadcast and your token balances are not affected. Top up your SOL balance through a centralised exchange, a peer-to-peer transfer, or the Fibe on-ramp, then retry the transaction.
+</Accordion>
+
+<Accordion title="Can I pay network fees in a token other than SOL?">
+  No. Solana's protocol requires that all network fees are paid in SOL. You cannot substitute USDC, another SPL token, or any other asset to cover validator fees.
+</Accordion>

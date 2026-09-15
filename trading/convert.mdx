@@ -1,0 +1,64 @@
+---
+title: "Convert Between Cryptocurrencies on Fibe at Fixed Rates"
+sidebarTitle: "Convert"
+description: "Convert one cryptocurrency to another at a fixed quoted price on Fibe. No slippage surprises — review the exact rate and confirm before anything executes."
+---
+
+Fibe's Convert feature lets you exchange one cryptocurrency for another at a firm, pre-agreed price. Unlike a standard swap — where the final execution price can differ from the quote due to market movement and slippage — Convert locks in a specific rate for you to review. You only proceed once you're satisfied with the exact amount you'll receive. This makes Convert the right choice when price certainty matters and you want to avoid any last-second surprises.
+
+## How Convert Differs from Swap
+
+Both Convert and Swap exchange one token for another in a single action, but they have an important structural difference:
+
+| | Convert | Swap |
+|---|---|---|
+| **Quoted price** | Fixed for the duration of the quote window | Live, may change at execution |
+| **Slippage** | None — you see exactly what you get | Variable based on slippage tolerance |
+| **Confirmation step** | Explicit price-lock confirmation required | Confirms against a slippage range |
+| **Best for** | Precision exchanges, planning ahead | Fast trades where speed > exact price |
+| **Quote validity** | Short window (see below) | Immediate, no expiry |
+
+With Convert, what you see is what you get — as long as you confirm within the quote window.
+
+## How to Convert Tokens
+
+<Steps>
+  <Step title="Open Convert">
+    Select **Convert** from the main navigation or from the trade mode selector. The Convert interface shows a **From** token field and a **To** token field.
+  </Step>
+  <Step title="Select your tokens">
+    Click the token selector in the **From** field and choose the cryptocurrency you want to exchange. Then click the selector in the **To** field and choose the token you want to receive.
+  </Step>
+  <Step title="Enter the amount">
+    Type the amount of the **From** token you want to convert, or click **Max** to use your full available balance. Fibe immediately fetches a firm quote showing the exact **To** token amount you will receive.
+  </Step>
+  <Step title="Review the fixed quote">
+    Examine the quote details carefully:
+    - **You pay** — the exact amount of the **From** token deducted from your wallet
+    - **You receive** — the exact amount of the **To** token credited to your wallet
+    - **Exchange rate** — the locked-in price ratio
+    - **Fee** — the protocol fee included in the quoted rate
+    - **Quote expires in** — the countdown timer showing how long the rate is guaranteed
+
+    No slippage range or price impact warning is shown because the price is fixed.
+  </Step>
+  <Step title="Confirm the conversion">
+    Click **Confirm Convert** before the quote timer runs out. If the timer expires, Fibe fetches a fresh quote automatically — review the new rate and confirm again if you're happy with it.
+  </Step>
+  <Step title="Sign the transaction">
+    Your Solana wallet opens a signing prompt. Approve the transaction to broadcast it to the network. The conversion executes at the quoted price.
+  </Step>
+  <Step title="View confirmation">
+    Once the transaction is confirmed on-chain, Fibe displays a success screen with the amounts exchanged, the effective rate, and a link to the Solana Explorer entry. Your updated balances appear immediately.
+  </Step>
+</Steps>
+
+## Supported Token Pairs
+
+Convert supports all token pairs listed on Fibe that have sufficient liquidity to generate a firm quote. The full list of available pairs includes all major Solana-native tokens and stablecoins — SOL, USDC, USDT, and the broader ecosystem of SPL tokens on the platform. Pairs with very low liquidity may not be available via Convert; in those cases, use the standard Swap or Instant Trade instead.
+
+To check whether a specific pair is available, simply select the **From** and **To** tokens. If a firm quote cannot be generated, Fibe will prompt you to use Swap or Instant Trade for that pair.
+
+<Note>
+  Convert quotes are valid for a short window — typically **15 to 30 seconds** — after which the rate is refreshed. If you see the timer reach zero, a new quote is fetched automatically. Always review the updated rate before confirming, as market conditions may have changed since the original quote was generated.
+</Note>

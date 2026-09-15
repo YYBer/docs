@@ -1,0 +1,94 @@
+---
+title: "Fund Your Fibe Wallet: Deposits and Withdrawals Guide"
+sidebarTitle: "Deposit & Withdraw"
+description: "Move funds into and out of Fibe using standard on-chain Solana transfers. Your assets stay in your wallet — Fibe is fully non-custodial."
+---
+
+Fibe is a non-custodial platform, which means it never holds your funds. Every deposit is a standard Solana transfer into your connected wallet address, and every withdrawal is an on-chain transaction that you sign yourself. There is no intermediary, no approval queue, and no waiting period — your balance updates in seconds.
+
+<Warning>
+  Only send **Solana (SPL) tokens** to your Fibe wallet address. Do not send ERC-20 tokens, BEP-20 tokens, or any assets from EVM-compatible chains (Ethereum, BNB Chain, etc.) to a Solana address. Tokens sent from incompatible networks cannot be recovered.
+</Warning>
+
+<Tabs>
+  <Tab title="Deposit">
+    Depositing funds on Fibe is as simple as sending a standard Solana transfer to your wallet address. Because Fibe is non-custodial, your connected wallet address **is** your Fibe address — there is no separate deposit account to manage.
+
+    <Steps>
+      <Step title="Open the Deposit screen">
+        In the top navigation bar, click **Portfolio**, then select **Deposit** from the dropdown menu.
+      </Step>
+      <Step title="Copy your wallet address or scan the QR code">
+        Your Solana wallet address is displayed on the Deposit screen. Click **Copy Address** to copy it to your clipboard, or hold up a mobile wallet camera to scan the QR code shown on screen.
+      </Step>
+      <Step title="Send tokens from your external wallet">
+        Open any Solana-compatible wallet (e.g., Phantom, Backpack, Solflare, or a centralised exchange withdrawal) and send SOL or any supported SPL token to the address you copied. Make sure you select the **Solana** network on the sending side.
+      </Step>
+      <Step title="Wait for confirmation">
+        Solana blocks confirm in roughly **400 milliseconds**, so your balance typically appears in **1–2 seconds**. Refresh your Portfolio view if the balance does not update automatically.
+      </Step>
+    </Steps>
+
+    <Note>
+      There is no minimum deposit amount enforced by Fibe, but your transaction must cover the Solana network fee on the sending side (usually a fraction of a cent). Very small SOL transfers may not be economically meaningful after fees.
+    </Note>
+
+    **Supported tokens for deposit**
+
+    Fibe supports SOL and all SPL tokens that have active trading markets on the platform. The full list of accepted tokens is visible in the Deposit token selector. If a token is not listed, it cannot be traded on Fibe and should not be sent.
+  </Tab>
+
+  <Tab title="Withdraw">
+    Withdrawals are on-chain transactions you authorise directly from your connected wallet. You retain full control at every step.
+
+    <Steps>
+      <Step title="Open the Withdraw screen">
+        In the top navigation bar, click **Portfolio**, then select **Withdraw** from the dropdown menu.
+      </Step>
+      <Step title="Enter the destination address">
+        Paste the Solana wallet address you want to send funds to in the **Destination Address** field. Double-check the address carefully — on-chain transactions cannot be reversed.
+      </Step>
+      <Step title="Select the token and amount">
+        Use the token selector to choose which SPL token (or SOL) you want to withdraw. Enter the amount, or click **Max** to withdraw your full available balance. The estimated network fee is displayed before you confirm.
+      </Step>
+      <Step title="Confirm and sign">
+        Click **Withdraw**, review the summary screen showing destination, token, amount, and network fee, then click **Confirm**. Your wallet extension (e.g., Phantom) will prompt you to sign the transaction. Approve the signature to broadcast the withdrawal.
+      </Step>
+      <Step title="Verify receipt">
+        The transaction appears in your Portfolio activity feed within seconds. You can also paste the transaction signature into [Solscan](https://solscan.io) or [Solana Explorer](https://explorer.solana.com) to confirm on-chain.
+      </Step>
+    </Steps>
+
+    **Minimum withdrawal amounts**
+
+    | Token | Minimum Withdrawal |
+    |-------|--------------------|
+    | SOL   | 0.001 SOL          |
+    | USDC  | 1 USDC             |
+    | Other SPL tokens | Equivalent of ~$0.10 USD |
+
+    Minimum amounts exist to ensure the withdrawal value exceeds the network transaction fee by a meaningful margin.
+
+    <Note>
+      All withdrawals incur a standard **Solana network fee** (typically less than $0.001). This fee is paid from your SOL balance and is shown on the confirmation screen before you sign. Learn more on the [Solana Fees](/fees/solana-fees) page.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Frequently Asked Questions
+
+<Accordion title="How long do deposits take to arrive?">
+  Solana finalises transactions in under a second in normal network conditions. Your Fibe portfolio balance should update within **1–2 seconds** of your deposit transaction being confirmed on-chain. If you experience a delay beyond 30 seconds, check the transaction status on [Solscan](https://solscan.io) using the transaction hash from your sending wallet.
+</Accordion>
+
+<Accordion title="Can I deposit from a centralised exchange?">
+  Yes. When withdrawing from a CEX (e.g., Binance, Coinbase, Kraken), select **Solana** as the network and paste your Fibe wallet address as the destination. Ensure the exchange supports SPL token withdrawals on the Solana network — do not use the ERC-20 network option.
+</Accordion>
+
+<Accordion title="What happens if I send tokens from the wrong network?">
+  Tokens sent from an incompatible network (such as Ethereum or BNB Chain) to a Solana address are permanently lost and cannot be recovered by Fibe or anyone else. Always verify you have selected the Solana network before sending.
+</Accordion>
+
+<Accordion title="Why is my withdrawal pending?">
+  Solana withdrawals are typically instant. If your withdrawal shows as pending for more than a few minutes, it may be due to temporary Solana network congestion. Check the Solana network status at [status.solana.com](https://status.solana.com) and verify the transaction on Solscan using the transaction ID shown in your activity feed.
+</Accordion>

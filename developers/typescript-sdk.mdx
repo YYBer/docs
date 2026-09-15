@@ -1,0 +1,657 @@
+---
+title: "Fibe TypeScript SDK Reference and Installation Guide"
+sidebarTitle: "TypeScript SDK"
+description: "Set up the Fibe TypeScript SDK to query markets, manage orders, and stream live data on Solana. Covers both the API client and Exchange client."
+---
+
+The Fibe TypeScript SDK gives you typed clients for both the Info API and the Exchange Client, so you can query real-time market data, place and manage orders, and stream live updates — all with full IntelliSense autocompletion in your editor. The SDK wraps the Fibe REST and WebSocket APIs into two focused modules: `api` for read-only market data and `exchange` for on-chain trading operations that require a Solana wallet.
+
+## Installation
+
+Install the SDK and its Solana peer dependency with your preferred package manager:
+
+<CodeGroup>
+
+```bash npm
+npm install @fibe/sdk @solana/web3.js
+```
+
+```bash yarn
+yarn add @fibe/sdk @solana/web3.js
+```
+
+```bash pnpm
+pnpm add @fibe/sdk @solana/web3.js
+```
+
+</CodeGroup>
+
+<Note>
+  The SDK automatically installs `@coral-xyz/anchor` and `@solana/spl-token` as transitive dependencies. You do not need to add them separately.
+</Note>
+
+## SDK Structure
+
+The SDK exports two top-level modules that map directly to the two halves of the Fibe platform:
+
+```typescript
+import { api, exchange } from '@fibe/sdk';
+```
+
+| Module | Purpose | Requires Wallet |
+|--------|---------|-----------------|
+| `api` | REST client for read-only market data | No |
+| `exchange` | Exchange client for on-chain trading | Yes |
+
+---
+
+## API Client Methods
+
+Create the API client by passing the base URL:
+
+```typescript
+import { api } from '@fibe/sdk';
+
+const apiClient = api.createApiClient('https://api.fibe.com');
+```
+
+### getMarkets()
+
+Fetch the full list of available trading markets.
+
+```typescript
+const markets = await apiClient.getMarkets();
+```
+
+<Expandable title="Example response">
+```json
+[
+  {
+    "baseDecimals": 9,
+    "baseMint": "So11111111111111111111111111111111111111112",
+    "label": "SOL/USDC",
+    "lookupTable": "...",
+    "lotSizeInBaseBaseUnits": 1000000,
+    "market": "...",
+    "marketIndex": 0,
+    "quoteDecimals": 6,
+    "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "tickSizeInQuoteBaseUnits": 100
+  }
+]
+```
+</Expandable>
+
+### getMarket(params)
+
+Fetch a single market by its numeric index.
+
+```typescript
+const market = await apiClient.getMarket({ marketIndex: 0 });
+```
+
+<Expandable title="Example response">
+```json
+{
+  "baseDecimals": 9,
+  "baseMint": "So11111111111111111111111111111111111111112",
+  "label": "SOL/USDC",
+  "lookupTable": "...",
+  "lotSizeInBaseBaseUnits": 1000000,
+  "market": "...",
+  "marketIndex": 0,
+  "quoteDecimals": 6,
+  "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "tickSizeInQuoteBaseUnits": 100
+}
+```
+</Expandable>
+
+### getAllMids()
+
+Retrieve the current mid price for every market as a map of `marketIndex → price string`.
+
+```typescript
+const mids = await apiClient.getAllMids();
+// { "0": "123.456", "1": "0.00012345" }
+```
+
+<Expandable title="Example response">
+```json
+{
+  "0": "123.456",
+  "1": "0.00012345"
+}
+```
+</Expandable>
+
+### getMarketStats(params)
+
+Fetch 24-hour price and volume statistics for a market.
+
+```typescript
+const stats = await apiClient.getMarketStats({ marketIndex: 0 });
+```
+
+<Expandable title="Example response">
+```json
+{
+  "bv24h": "1234567.89",
+  "px": "123.456",
+  "px24hAgo": "120.123",
+  "qv24h": "987654.32"
+}
+```
+</Expandable>
+
+| Field | Description |
+|-------|-------------|
+| `px` | Current mid price |
+| `px24hAgo` | Mid price 24 hours ago |
+| `bv24h` | 24-hour base-token volume |
+| `qv24h` | 24-hour quote-token volume |
+
+### getL2Book(params)
+
+Fetch the Level 2 orderbook aggregated at a given price step.
+
+```typescript
+const orderbook = await apiClient.getL2Book({
+  marketIndex: 0,
+  priceStep: 0.01  // price aggregation step
+});
+```
+
+<Expandable title="Example response">
+```json
+[
+  {
+    "asks": [
+      { "px": "123.50", "sz": "10.5" },
+      { "px": "123.60", "sz": "25.0" }
+    ],
+    "bids": [
+      { "px": "123.40", "sz": "15.2" },
+      { "px": "123.30", "sz": "30.0" }
+    ],
+    "market": 0,
+    "ps": 100
+  }
+]
+```
+</Expandable>
+
+### getCandles(params)
+
+Fetch OHLCV candlestick data for a time range and interval.
+
+```typescript
+import { api } from '@fibe/sdk';
+
+const candles = await apiClient.getCandles({
+  marketIndex: 0,
+  startTimestamp: Date.now() - 86400000, // 24 hours ago
+  endTimestamp: Date.now(),
+  interval: api.CandleInterval.Hour1
+});
+```
+
+<Expandable title="Example response">
+```json
+[
+  {
+    "T": 1705363200000,
+    "bv": "1234.56",
+    "c": "123.50",
+    "h": "124.00",
+    "l": "122.00",
+    "market": 0,
+    "n": 150,
+    "o": "122.50",
+    "qv": "152345.67",
+    "t": 1705359600000
+  }
+]
+```
+</Expandable>
+
+### getRecentMarketTrades(params)
+
+Retrieve the most recent trades executed on a market.
+
+```typescript
+const trades = await apiClient.getRecentMarketTrades({ marketIndex: 0 });
+```
+
+<Expandable title="Example response">
+```json
+[
+  {
+    "market": 0,
+    "oid": "abc123",
+    "px": "123.45",
+    "side": "B",
+    "sz": "10.5",
+    "time": 1705363200000,
+    "txId": "..."
+  }
+]
+```
+</Expandable>
+
+### getOpenOrders(params)
+
+List all open orders for a wallet address.
+
+```typescript
+const orders = await apiClient.getOpenOrders({
+  user: 'wallet_address_here'
+});
+```
+
+<Expandable title="Example response">
+```json
+[
+  {
+    "createdAt": 1705363200000,
+    "market": 0,
+    "oid": "abc123",
+    "origSz": "10.0",
+    "px": "123.45",
+    "side": "B",
+    "status": "O",
+    "sz": "5.0",
+    "txId": "...",
+    "type": "L",
+    "updatedAt": 1705363500000
+  }
+]
+```
+</Expandable>
+
+### getHistoricalOrders(params)
+
+Retrieve paginated order history for a wallet address.
+
+```typescript
+const history = await apiClient.getHistoricalOrders({
+  user: 'wallet_address_here',
+  page: 0,       // optional, defaults to 0
+  pageSize: 50   // optional
+});
+```
+
+<Expandable title="Example response">
+```json
+[
+  {
+    "createdAt": 1705363200000,
+    "market": 0,
+    "oid": "abc123",
+    "origSz": "10.0",
+    "px": "123.45",
+    "side": "B",
+    "status": "F",
+    "sz": "0.0",
+    "txId": "...",
+    "type": "L",
+    "updatedAt": 1705363500000
+  }
+]
+```
+</Expandable>
+
+---
+
+## Exchange Client Methods
+
+Create the Exchange Client by providing a Solana connection and your API client:
+
+```typescript
+import { api, exchange } from '@fibe/sdk';
+import { Connection, Keypair } from '@solana/web3.js';
+
+const apiClient = api.createApiClient('https://api.fibe.com');
+const connection = new Connection('https://api.mainnet-beta.solana.com');
+
+const exchangeClient = new exchange.ExchangeClient(
+  connection,
+  'confirmed',  // commitment level
+  apiClient
+);
+```
+
+All trading operations require a wallet that satisfies the `Wallet` interface. You can build one from a `Keypair` for server-side scripts:
+
+```typescript
+const keypair = Keypair.fromSecretKey(yourSecretKey);
+
+const wallet = {
+  publicKey: keypair.publicKey,
+  signTransaction: async (tx) => {
+    tx.sign([keypair]);
+    return tx;
+  }
+};
+```
+
+<Warning>
+  Never hard-code a secret key in client-side code. Use environment variables or a secrets manager for server-side scripts, and use a browser wallet adapter for front-end applications.
+</Warning>
+
+### placeLimitOrder(params)
+
+Build a limit order transaction and then send it with `sendAndConfirmTx`.
+
+```typescript
+const tx = await exchangeClient.placeLimitOrder({
+  owner: wallet.publicKey,
+  marketIndex: 0,
+  price: '100.50',            // price as a string
+  orderId: BigInt(Date.now()), // unique order ID
+  side: exchange.Side.Bid,    // Side.Bid = buy, Side.Ask = sell
+  baseQuantity: '1.5',        // quantity in base token
+  timeInForce: exchange.TimeInForce.Gtc, // optional, defaults to Gtc
+});
+
+await exchangeClient.sendAndConfirmTx(tx, wallet);
+```
+
+<Expandable title="Parameters">
+  <ParamField body="owner" type="PublicKey" required>
+    The wallet public key that owns the order.
+  </ParamField>
+  <ParamField body="marketIndex" type="number" required>
+    The numeric index of the market to trade on.
+  </ParamField>
+  <ParamField body="price" type="string" required>
+    The limit price as a decimal string (e.g. `"100.50"`).
+  </ParamField>
+  <ParamField body="orderId" type="bigint" required>
+    A unique order ID. Using `BigInt(Date.now())` is a common approach.
+  </ParamField>
+  <ParamField body="side" type="Side" required>
+    `Side.Bid` to buy or `Side.Ask` to sell.
+  </ParamField>
+  <ParamField body="baseQuantity" type="string">
+    Quantity in the base token. Provide either `baseQuantity` or `quoteQuantity`, not both.
+  </ParamField>
+  <ParamField body="quoteQuantity" type="string">
+    Quantity in the quote token. Provide either `baseQuantity` or `quoteQuantity`, not both.
+  </ParamField>
+  <ParamField body="timeInForce" type="TimeInForce">
+    Execution policy. Defaults to `Gtc`. Options: `Gtc`, `Ioc`, `PostOnly`, `Fok`.
+  </ParamField>
+  <ParamField body="referrer" type="PublicKey">
+    Optional referrer public key for fee-sharing programs.
+  </ParamField>
+</Expandable>
+
+### placeMarketOrder(params)
+
+Execute a market order with an optional slippage tolerance. Market orders use `TimeInForce.Ioc` automatically.
+
+```typescript
+const tx = await exchangeClient.placeMarketOrder({
+  owner: wallet.publicKey,
+  marketIndex: 0,
+  orderId: BigInt(Date.now()),
+  side: exchange.Side.Bid,
+  baseQuantity: '1.5',
+  slippage: 0.05,  // 5% slippage tolerance; optional, defaults to 5%
+});
+
+await exchangeClient.sendAndConfirmTx(tx, wallet);
+```
+
+### cancelOrder(params)
+
+Cancel an existing open order by its order ID.
+
+```typescript
+const tx = await exchangeClient.cancelOrder({
+  signer: wallet.publicKey,
+  marketIndex: 0,
+  orderId: BigInt('1704067200000'),
+});
+
+await exchangeClient.sendAndConfirmTx(tx, wallet);
+```
+
+### modifyOrder(params)
+
+Replace an existing open order with new parameters in a single transaction.
+
+```typescript
+const tx = await exchangeClient.modifyOrder({
+  owner: wallet.publicKey,
+  marketIndex: 0,
+  oldOrderId: BigInt('1704067200000'),
+  newOrderId: BigInt(Date.now()),
+  newPrice: '101.00',
+  newSide: exchange.Side.Bid,
+  newQuantity: '2.0',
+  newTimeInForce: exchange.TimeInForce.Gtc,
+});
+
+await exchangeClient.sendAndConfirmTx(tx, wallet);
+```
+
+<Note>
+  `oldOrderId` and `newOrderId` must be different values or the SDK will throw an error.
+</Note>
+
+### estimateBidMinInputQuoteAndFee(params)
+
+Calculate the minimum quote token input and fees required for a buy order before submitting it.
+
+```typescript
+const bidEstimate = await exchangeClient.estimateBidMinInputQuoteAndFee(
+  wallet.publicKey,
+  0,           // marketIndex
+  '1.5',       // baseQuantity
+  exchange.TimeInForce.Ioc,
+  '103.50',    // price (optional — omit for market orders)
+  0.05         // slippage (optional)
+);
+
+console.log('Min input:', bidEstimate.minInput);
+console.log('Fee:', bidEstimate.fee);
+```
+
+### estimateAskMaxOutputQuoteAndFee(params)
+
+Calculate the maximum quote token output and fees for a sell order before submitting it.
+
+```typescript
+const askEstimate = await exchangeClient.estimateAskMaxOutputQuoteAndFee(
+  wallet.publicKey,
+  0,           // marketIndex
+  '1.5',       // baseQuantity
+  exchange.TimeInForce.Ioc
+);
+
+console.log('Max output:', askEstimate.output);
+console.log('Fee:', askEstimate.fee);
+```
+
+---
+
+## Types Reference
+
+### Side
+
+Represents the direction of an order.
+
+```typescript
+enum Side {
+  Bid = "B",  // Buy
+  Ask = "A"   // Sell
+}
+```
+
+### TimeInForce
+
+Controls how long an order remains active and under what conditions it executes.
+
+```typescript
+enum TimeInForce {
+  Gtc,       // Good Till Cancelled — stays open until manually cancelled
+  Ioc,       // Immediate Or Cancel — fills what it can, cancels the rest
+  PostOnly,  // Only adds liquidity; rejected if it would match immediately
+  Fok        // Fill Or Kill — must fill completely or is cancelled entirely
+}
+```
+
+### CandleInterval
+
+All supported OHLCV candlestick intervals.
+
+```typescript
+enum CandleInterval {
+  Min1   = "1m",
+  Min3   = "3m",
+  Min5   = "5m",
+  Min15  = "15m",
+  Min30  = "30m",
+  Hour1  = "1h",
+  Hour2  = "2h",
+  Hour4  = "4h",
+  Hour8  = "8h",
+  Hour12 = "12h",
+  Day1   = "1d",
+  Day3   = "3d",
+  Week1  = "1w",
+  Month1 = "1M"
+}
+```
+
+### Market
+
+Describes a trading market and its on-chain configuration.
+
+```typescript
+interface Market {
+  market: string;                   // on-chain market address
+  marketIndex: number;              // numeric market identifier
+  baseMint: string;                 // base token mint address
+  quoteMint: string;                // quote token mint address
+  baseDecimals: number;             // decimal places for base token
+  quoteDecimals: number;            // decimal places for quote token
+  tickSizeInQuoteBaseUnits: number; // minimum price increment
+  lotSizeInBaseBaseUnits: number;   // minimum quantity increment
+  label?: string;                   // human-readable label, e.g. "SOL/USDC"
+  lookupTable?: string;             // address lookup table address
+}
+```
+
+### Order
+
+Represents a single order and its current state.
+
+```typescript
+interface Order {
+  market: number;
+  oid: string;
+  type: OrderType;      // "M" = market, "L" = limit
+  px: string;           // price as decimal string
+  side: Side;           // "B" = bid/buy, "A" = ask/sell
+  origSz: string;       // original quantity
+  sz: string;           // remaining quantity
+  status: OrderStatus;  // "O" = open, "F" = filled, "C" = cancelled
+  txId: string;         // Solana transaction signature
+  createdAt: number;    // Unix timestamp in milliseconds
+  updatedAt: number;    // Unix timestamp in milliseconds
+}
+```
+
+### L2Book and BookLevel
+
+The full Level 2 orderbook response and its individual price levels.
+
+```typescript
+interface L2Book {
+  market: number;
+  ps: number;         // scaled price step
+  bids: BookLevel[];  // sorted descending by price
+  asks: BookLevel[];  // sorted ascending by price
+}
+
+interface BookLevel {
+  px: string;  // price as decimal string
+  sz: string;  // aggregated size at this level as decimal string
+}
+```
+
+<Tip>
+  All prices, sizes, and volumes throughout the SDK are returned as **strings** to preserve decimal precision and avoid floating-point rounding errors. Parse them with `parseFloat()` or a decimal library only when you need to perform arithmetic.
+</Tip>
+
+### Enum Value Quick Reference
+
+| Field | Value | Meaning |
+|-------|-------|---------|
+| `side` | `B` | Bid — buy order |
+| `side` | `A` | Ask — sell order |
+| `type` | `M` | Market order |
+| `type` | `L` | Limit order |
+| `status` | `O` | Open |
+| `status` | `F` | Filled |
+| `status` | `C` | Cancelled |
+
+---
+
+## Error Handling
+
+Always wrap SDK calls in `try/catch` blocks. The Exchange Client throws descriptive errors that map to specific misconfiguration or on-chain conditions.
+
+```typescript
+try {
+  const tx = await exchangeClient.placeLimitOrder({
+    owner: wallet.publicKey,
+    marketIndex: 0,
+    price: '100.00',
+    orderId: BigInt(Date.now()),
+    side: exchange.Side.Bid,
+    baseQuantity: '1.5',
+  });
+
+  await exchangeClient.sendAndConfirmTx(tx, wallet);
+  console.log('Order placed successfully');
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+
+### Error Message Reference
+
+<Accordion title="Order Parameter Errors">
+  | Error Message | Cause |
+  |---------------|-------|
+  | `Either baseQuantity or quoteQuantity must be provided` | Neither quantity field was included in the request |
+  | `Only one of baseQuantity or quoteQuantity should be provided` | Both `baseQuantity` and `quoteQuantity` were set simultaneously |
+  | `The price is required for limit orders` | A limit order was submitted without a `price` value |
+  | `oldOrderId and newOrderId cannot be the same` | `modifyOrder` was called with identical old and new IDs |
+  | `invalid maxBaseQuantity and maxQuoteQuantity` | The quantity values provided are not valid numbers |
+  | `newSide must be bid` | The side field does not match the expected bid direction |
+  | `newSide must be ask` | The side field does not match the expected ask direction |
+</Accordion>
+
+<Accordion title="Market and Account Errors">
+  | Error Message | Cause |
+  |---------------|-------|
+  | `dex config not found` | The DEX program has not been initialized for this connection |
+  | `Token mint base not found` | The `baseMint` address is invalid or not on-chain |
+  | `Token mint quote not found` | The `quoteMint` address is invalid or not on-chain |
+  | `No mid price found for market ${marketIndex}` | No price data is available for the specified market |
+  | `old tick account not found` | The order you are modifying no longer exists |
+  | `lookup table account not found` | The address lookup table address is invalid |
+  | `market label must be 8 bytes` | The market label string exceeds 8 bytes |
+</Accordion>
+
+<Accordion title="WebSocket Errors">
+  | Error Message | Cause |
+  |---------------|-------|
+  | `WebSocket is not connected` | A subscription message was sent before the connection was established |
+  | `invalid price step ${priceStep}` | The `priceStep` value passed to `getL2Book` or `subscribeToL2Book` is not valid |
+</Accordion>

@@ -1,0 +1,90 @@
+---
+title: "Staking Tokens on Fibe to Earn Passive Yield Rewards"
+sidebarTitle: "Staking"
+description: "Lock supported tokens in Fibe's staking module to earn yield automatically, without active trading or managing validator nodes yourself."
+---
+
+Staking on Fibe lets you put supported tokens to work and earn passive rewards without placing a single trade. You simply deposit tokens into a staking position, and the platform automatically accrues yield to your account based on current reward rates. When you want your liquidity back, you can unstake at any time — subject to the unbonding period for each supported token.
+
+## Supported Staking Tokens
+
+Fibe currently supports staking for the following tokens:
+
+| Token | Reward Type | Est. APY | Unbonding Period |
+|-------|-------------|----------|-----------------|
+| SOL   | Native staking yield | 6–8% | ~2–3 days (1 epoch) |
+| USDC  | Liquidity pool yield | 3–6% | Instant |
+| JTO   | Governance / protocol rewards | Variable | ~1 day |
+
+<Note>
+  APY estimates are indicative and update in real time based on network conditions, validator performance, and liquidity utilisation. Check the **Staking** page in the Fibe app for current live rates before committing funds.
+</Note>
+
+## How Staking Works
+
+When you stake tokens on Fibe, your assets are delegated to vetted Solana validators or deposited into protocol-managed liquidity pools depending on the token. Rewards accrue continuously and are credited to your staking balance, compounding your position over time. You retain ownership of your tokens at all times — Fibe is non-custodial and your staked balance is always visible on-chain.
+
+Reward rates reflect a combination of:
+- **Solana network inflation** (for SOL native staking)
+- **Protocol fee revenue** shared with liquidity providers (for pool-based tokens)
+- **Governance incentives** from partner protocols (for tokens like JTO)
+
+## Stake Tokens
+
+<Steps>
+  <Step title="Navigate to Staking">
+    In the top navigation bar, click **Portfolio**, then select **Staking**. You will see a list of supported tokens with current APY rates and your existing positions (if any).
+  </Step>
+  <Step title="Select a token to stake">
+    Click the **Stake** button next to the token you want to stake. A staking panel opens on the right side of the screen.
+  </Step>
+  <Step title="Enter the amount">
+    Type the amount of tokens you want to stake, or click **Max** to stake your full available balance. The panel displays the estimated annual yield in USD at the current APY.
+  </Step>
+  <Step title="Confirm the staking transaction">
+    Review the summary — token, amount, current APY, and unbonding period — then click **Confirm Stake**. Your wallet extension will prompt you to sign the on-chain transaction.
+  </Step>
+  <Step title="Verify your position">
+    After signing, your staked position appears in the **Active Stakes** section of the Staking page within a few seconds. Rewards begin accruing immediately.
+  </Step>
+</Steps>
+
+## Unstake Tokens
+
+<Steps>
+  <Step title="Open your active staking position">
+    On the **Staking** page, locate your position under **Active Stakes** and click on it to expand the position details.
+  </Step>
+  <Step title="Initiate unstaking">
+    Click the **Unstake** button. Enter the amount you want to unstake — you can partially unstake a position, leaving the remainder to continue earning rewards.
+  </Step>
+  <Step title="Confirm and sign">
+    Review the unstaking confirmation, which shows the amount being released and the estimated time until funds are available (the unbonding period). Click **Confirm Unstake** and sign the transaction in your wallet.
+  </Step>
+  <Step title="Wait for the unbonding period">
+    Your tokens enter an **unbonding** state and are no longer earning rewards. Once the unbonding period expires, the tokens return automatically to your available balance, visible in the Portfolio overview.
+  </Step>
+</Steps>
+
+<Note>
+  For **SOL staking**, the unbonding period aligns with the Solana epoch boundary — typically **2–3 days**. For **USDC** liquidity staking, withdrawals are processed instantly. Check the unbonding period displayed in the confirmation dialog before you unstake, as periods can vary by network conditions.
+</Note>
+
+## Reward Rates and Calculations
+
+Rewards are calculated continuously and reflected in your staking balance. The APY shown in the UI is an annualised estimate derived from the trailing 7-day reward rate. Your actual earned rewards are shown in the **Rewards Earned** column of your staking position.
+
+**Example calculation:**
+- Staked amount: 100 SOL
+- Current APY: 7%
+- Daily rewards: 100 × 0.07 ÷ 365 ≈ **0.019 SOL/day**
+
+Compounded rewards are automatically restaked (for supported tokens with auto-compound enabled) or remain in your liquid balance until you choose to stake them manually.
+
+<Warning>
+  Staking rewards are variable and not guaranteed. APY rates can decrease if network staking participation increases, validator performance drops, or protocol incentive programs change. Never stake funds you may need immediately, particularly for tokens with multi-day unbonding periods.
+</Warning>
+
+<Tip>
+  You can view a full history of your staking rewards in **Portfolio → Activity**, filtered by the "Staking Reward" event type. This is useful for tax reporting and tracking cumulative yield over time.
+</Tip>

@@ -1,0 +1,136 @@
+{
+  "projectType": "saas",
+  "projectName": "Fibe",
+  "projectDescription": "Fibe is a next-generation Solana-based trading platform that lets users swap, trade, and manage crypto assets with advanced order types, wallet tracking, perpetuals via Hyperliquid, and a public REST/WebSocket API with TypeScript SDK.",
+  "theme": "luma",
+  "primaryColor": "#6C47FF",
+  "lightColor": "#EDE9FF",
+  "darkColor": "#3A1FCC",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Platform",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "getting-started/introduction",
+              "getting-started/signup",
+              "getting-started/referral-program",
+              "getting-started/rewards-and-points"
+            ]
+          },
+          {
+            "group": "Trading",
+            "pages": [
+              "trading/swap",
+              "trading/market-and-limit-orders",
+              "trading/instant-trade",
+              "trading/convert",
+              "trading/perpetuals",
+              "trading/migration-actions"
+            ]
+          },
+          {
+            "group": "Discover Tokens",
+            "pages": [
+              "tokens/buy-crypto",
+              "tokens/finding-tokens",
+              "tokens/explore-tokens",
+              "tokens/pulse",
+              "tokens/similar-tokens"
+            ]
+          },
+          {
+            "group": "Portfolio & Wallets",
+            "pages": [
+              "portfolio/deposit-and-withdraw",
+              "portfolio/staking",
+              "portfolio/multi-wallet",
+              "portfolio/wallet-tracking",
+              "portfolio/trader-scan"
+            ]
+          },
+          {
+            "group": "Fees",
+            "pages": [
+              "fees/fibe-fees",
+              "fees/solana-fees"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developers",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "developers/api-overview",
+              "developers/authentication",
+              "developers/rate-limits"
+            ]
+          },
+          {
+            "group": "TypeScript SDK",
+            "pages": [
+              "developers/typescript-sdk",
+              "developers/websocket",
+              "developers/code-examples"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "developers/api-reference"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Token swaps and spot trading on Solana",
+    "Market and limit orders with multiple time-in-force options",
+    "Instant Trade for optimal-price execution",
+    "Perpetual futures trading via Hyperliquid integration",
+    "Token discovery with Pulse, Explore, and Similar Tokens",
+    "Multi-wallet portfolio management",
+    "Wallet tracking with Twitter/X tweet monitoring and Trader Scan",
+    "Staking to earn rewards",
+    "Referral program and point-based reward system",
+    "Public REST API and real-time WebSocket API",
+    "Official TypeScript SDK"
+  ],
+  "publicApiSurface": [
+    "GET /api/v1/markets",
+    "GET /api/v1/market",
+    "GET /api/v1/all-mids",
+    "GET /api/v1/market-stats",
+    "GET /api/v1/l2book",
+    "GET /api/v1/recent-market-trades",
+    "GET /api/v1/candles",
+    "GET /api/v1/open-orders",
+    "GET /api/v1/historical-orders",
+    "WebSocket: l2Book subscription",
+    "WebSocket: trades subscription",
+    "WebSocket: allMids subscription",
+    "WebSocket: candle subscription",
+    "WebSocket: orderUpdates subscription",
+    "SDK: getMarkets()",
+    "SDK: getMarket(marketIndex)",
+    "SDK: getAllMids()",
+    "SDK: getMarketStats(marketIndex)",
+    "SDK: getL2Book(marketIndex, priceStep)",
+    "SDK: getCandles(marketIndex, startTimestamp, endTimestamp, interval)",
+    "SDK: getRecentMarketTrades(marketIndex)",
+    "SDK: getOpenOrders(user)",
+    "SDK: getHistoricalOrders(user, page?, pageSize?)",
+    "SDK: placeLimitOrder(params)",
+    "SDK: placeMarketOrder(params)",
+    "SDK: cancelOrder(params)",
+    "SDK: modifyOrder(params)",
+    "SDK: estimateBidMinInputQuoteAndFee(params)",
+    "SDK: estimateAskMaxOutputQuoteAndFee(params)"
+  ]
+}

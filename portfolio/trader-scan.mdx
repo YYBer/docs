@@ -1,0 +1,90 @@
+---
+title: "Fibe Trader Scan: Rank and Discover Top Solana Traders"
+sidebarTitle: "Trader Scan"
+description: "Use Fibe's Trader Scan to rank and discover the most profitable on-chain traders on Solana by PnL, win rate, volume, and trading activity."
+---
+
+Trader Scan analyses on-chain data across the entire Solana ecosystem to surface the most profitable and active traders, ranked by real performance metrics. Instead of searching for alpha manually, you can use Trader Scan to discover wallets with strong track records, study their strategies, and add the most interesting ones to your watchlist for ongoing monitoring. Every ranking is derived from verified on-chain transaction data — not self-reported figures.
+
+## How Trader Scan Works
+
+Fibe continuously indexes on-chain trading activity across major Solana DEXs and protocols. Trader Scan aggregates this data and ranks wallets according to four core metrics:
+
+<CardGroup cols={2}>
+  <Card title="Realised PnL" icon="dollar-sign">
+    Total profit and loss from closed trades over the selected time window, denominated in USD. This is the primary ranking signal.
+  </Card>
+  <Card title="Win Rate" icon="trophy">
+    The percentage of trades that closed in profit. A high win rate alongside strong PnL indicates consistent edge rather than a single lucky trade.
+  </Card>
+  <Card title="Trading Volume" icon="chart-bar">
+    Total USD volume traded across all tokens and protocols. Useful for distinguishing high-conviction traders from high-frequency noise.
+  </Card>
+  <Card title="Activity" icon="bolt">
+    Number of individual trades executed in the period. Helps identify whether a trader is actively managing positions or holding passively.
+  </Card>
+</CardGroup>
+
+Rankings update every **15 minutes** to reflect the latest on-chain data.
+
+## Filter Options
+
+Use the filter bar at the top of the Trader Scan page to narrow the leaderboard to traders that match your criteria:
+
+| Filter | Options | Description |
+|--------|---------|-------------|
+| **Time Period** | 7d, 30d, All Time | Rank traders by performance within the selected window |
+| **Token** | Any listed SPL token | Show only traders who have traded a specific token |
+| **Minimum Trade Count** | 5, 10, 25, 50, 100+ | Filter out wallets with too few trades to be statistically meaningful |
+| **Minimum Volume** | $1k, $10k, $100k, $1M+ | Focus on traders with meaningful capital deployment |
+| **Sort By** | PnL, Win Rate, Volume, Trade Count | Change the primary ranking metric |
+
+Combining filters — for example, **30d + USDC + 25 minimum trades + sort by Win Rate** — helps you find traders with demonstrated edge in a specific market rather than one-off outliers.
+
+## Using Trader Scan
+
+<Steps>
+  <Step title="Navigate to Trader Scan">
+    In the top navigation bar, click **Wallet Tracking**, then select **Trader Scan** from the submenu. The leaderboard loads with default settings: 7-day period, all tokens, sorted by PnL.
+  </Step>
+  <Step title="Apply your filters">
+    Use the filter bar to set your preferred time period, token focus, and minimum trade count. The leaderboard refreshes automatically as you adjust filters — no need to click a search button.
+  </Step>
+  <Step title="Explore a trader's profile">
+    Click any row in the leaderboard to open that trader's full on-chain profile. You will see their complete holdings, a chronological trade history, PnL breakdown by token, and open positions if any exist.
+  </Step>
+  <Step title="Add to your watchlist">
+    On the trader's profile page, click **+ Add to Watchlist** (or the bookmark icon in the leaderboard row). The wallet is added to your Wallet Tracking dashboard where you can monitor it in real time and configure alerts.
+  </Step>
+</Steps>
+
+## Adding a Discovered Trader to Your Watchlist
+
+After clicking **+ Add to Watchlist** from a Trader Scan profile, you are prompted to:
+
+- **Label the wallet** — assign a memorable name like "30d Top SOL PnL" or "Consistent High Win Rate"
+- **Enable alerts** — optionally turn on trade notifications immediately so you are alerted whenever the wallet makes a move
+- **View on Wallet Tracking** — jump directly to the full monitoring dashboard for that wallet
+
+Watchlisted wallets appear in the **Wallet Tracking** tab with the label you assigned. You can manage, remove, or reconfigure alerts for any watchlisted wallet at any time from the Wallet Tracking settings.
+
+## Leaderboard Columns Reference
+
+| Column | Description |
+|--------|-------------|
+| Rank | Current position in the leaderboard for the active filter set |
+| Wallet | Shortened wallet address with custom label if assigned |
+| Realised PnL | Total closed-trade profit/loss in USD |
+| Win Rate | % of trades closed in profit |
+| Total Volume | USD value of all trades executed |
+| Trade Count | Number of individual transactions |
+| Last Active | Time since the wallet's most recent on-chain trade |
+| Actions | Add to watchlist, view profile |
+
+<Tip>
+  Cross-reference Trader Scan results with **Pulse** signals to validate trader conviction. If a top-ranked wallet from Trader Scan is also buying a token that Pulse is flagging as gaining momentum, that convergence of signals can offer stronger context for your own trade decisions. Navigate to **Pulse** from the main nav to compare.
+</Tip>
+
+<Note>
+  Trader Scan data reflects **realised** PnL from closed positions only. Unrealised gains on open positions are not included in the ranking. A wallet may rank lower than expected if it is currently holding large open positions that have not yet been closed.
+</Note>

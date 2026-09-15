@@ -1,0 +1,96 @@
+---
+title: "Real-Time Solana Wallet Monitoring and Tracking on Fibe"
+sidebarTitle: "Wallet Tracking"
+description: "Monitor any Solana wallet's holdings, trades, and PnL in real time on Fibe — including top traders, whales, and your own cold wallets."
+---
+
+Fibe's wallet tracking feature lets you monitor any Solana wallet address without connecting it — your own cold wallets, known whale addresses, or top traders you want to follow. You can see their full token holdings, recent trade history, open positions, and realised PnL as it updates in real time, all from a single dashboard. Fibe also extends tracking into your Twitter/X feed via a browser extension, surfacing on-chain context for wallet addresses mentioned in tweets.
+
+## Adding a Wallet to Track
+
+<Steps>
+  <Step title="Open Wallet Tracking">
+    In the top navigation bar, click **Wallet Tracking**. The Wallet Tracking dashboard opens, showing any wallets you have already added.
+  </Step>
+  <Step title="Add a new wallet">
+    Click the **+ Add Wallet** button in the top-right corner of the Wallet Tracking page.
+  </Step>
+  <Step title="Paste the wallet address">
+    Enter the Solana wallet address you want to track in the input field. Fibe validates the address format and confirms it is a valid Solana public key before saving.
+  </Step>
+  <Step title="Label the wallet (optional)">
+    Add a descriptive label such as "Whale A", "Top SOL Trader", or "My Cold Wallet". Labels make it easy to identify tracked wallets at a glance when you have multiple entries.
+  </Step>
+  <Step title="Save and view">
+    Click **Add**. The wallet appears in your tracking list and Fibe immediately loads its current holdings and recent activity.
+  </Step>
+</Steps>
+
+<Tip>
+  Use descriptive labels for every wallet you track. When monitoring several high-volume traders simultaneously, labels like "7-Day Top PnL #1" or "ETH Rotation Whale" help you quickly recall why you added each wallet and act on signals faster.
+</Tip>
+
+## What You Can See
+
+Once a wallet is tracked, clicking it opens a full profile with the following data, updated in real time:
+
+<CardGroup cols={2}>
+  <Card title="Holdings" icon="coins">
+    A complete breakdown of the wallet's current token balances, including SOL, USDC, and all SPL tokens held, with current USD values at live prices.
+  </Card>
+  <Card title="Recent Trades" icon="arrow-right-arrow-left">
+    A chronological feed of all swaps, buys, and sells the wallet has executed, including token pairs, amounts, prices, and transaction timestamps.
+  </Card>
+  <Card title="Open Positions" icon="chart-line">
+    Any active perpetual futures positions the wallet holds, including size, entry price, leverage, and unrealised PnL.
+  </Card>
+  <Card title="PnL Summary" icon="chart-bar">
+    Realised profit and loss over selectable time windows (24h, 7d, 30d, all time), broken down by token and trade.
+  </Card>
+</CardGroup>
+
+## Monitor Wallets
+
+The **Monitor** feature lets you set up real-time alerts for tracked wallets so you never miss a significant move.
+
+To configure monitoring on a tracked wallet, open the wallet's profile and click **Set Alert**. You can configure alerts for:
+
+- **New trade executed** — triggers whenever the wallet makes any swap or futures trade above a configurable USD threshold
+- **Holdings change** — triggers when a token balance increases or decreases by more than a set percentage
+- **New position opened** — triggers when the wallet opens a new perpetual futures position
+- **Position closed** — triggers when an existing position is fully or partially closed
+
+Alerts are delivered as in-app notifications and optionally via email. Configure your notification preferences in **Settings → Notifications**.
+
+## Tweet Monitor
+
+The **Tweet Monitor** connects wallet activity to social media by letting you link a Twitter/X handle or tweet URL to a tracked wallet. Once linked, Fibe surfaces on-chain activity from that wallet alongside relevant tweets.
+
+<Steps>
+  <Step title="Open Tweet Monitor">
+    In the Wallet Tracking dashboard, click the **Tweet Monitor** tab.
+  </Step>
+  <Step title="Link a Twitter handle or tweet URL">
+    Paste a Twitter/X handle (e.g., `@cryptotrader`) or a direct tweet URL that mentions a wallet address. Fibe extracts any Solana addresses mentioned and links them to the wallet tracking profile.
+  </Step>
+  <Step title="Review linked activity">
+    Once linked, the wallet's trading activity is displayed alongside the associated tweets in a combined timeline. You can see when a tweet was posted relative to when the wallet made its moves — useful for identifying whether social posts precede or follow on-chain activity.
+  </Step>
+</Steps>
+
+## Twitter Preview Popup
+
+When you install the **Fibe browser extension**, it automatically enhances your Twitter/X browsing experience by detecting Solana wallet addresses mentioned in tweets and displaying an inline popup with live on-chain data.
+
+When a Solana address appears in a tweet, a small **Fibe icon** appears next to it. Hover over the address (or click the icon) to expand a popup showing:
+
+- Current token holdings and total portfolio value
+- 7-day and 30-day PnL
+- Most recently traded tokens
+- A direct link to view the full wallet profile on Fibe
+
+The browser extension is available for **Chrome** and **Brave**. Search for "Fibe" in the Chrome Web Store or Brave extensions gallery and install it, then connect it to your Fibe account to enable the popup feature.
+
+<Note>
+  Wallet tracking is strictly **read-only**. You can observe any wallet's activity, but you cannot place orders, sign transactions, or move funds on behalf of a wallet you are tracking. Only wallets you own and have connected via a wallet provider can be used for trading.
+</Note>

@@ -1,0 +1,170 @@
+---
+title: "Fibe API Rate Limits: REST Weights and WebSocket Caps"
+sidebarTitle: "Rate Limits"
+description: "Fibe uses a weight-based rate limit system. You have a 1200-weight-per-minute REST budget and separate caps for WebSocket connections and messages."
+---
+
+The Fibe API uses a weight-based rate limiting system rather than a simple requests-per-second cap. Every REST endpoint carries an assigned weight value, and your application has a rolling budget of 1,200 weight units per minute across all calls made from a single IP address. WebSocket connections are governed by separate, connection-level limits. Understanding these limits — and designing around them — is essential for building reliable integrations that stay well within the allowed thresholds.
+
+## REST Rate Limits
+
+All REST requests to `https://api.fibe.com` are counted against a single rolling weight budget per originating IP address.
+
+| Limit | Value |
+|-------|-------|
+| Weight budget | 1,200 per minute |
+
+The budget resets at the start of each new minute window. If you exhaust your 1,200-weight budget before the window resets, the API returns an `HTTP 429 Too Many Requests` response for all subsequent requests until the new window begins.
+
+### Endpoint Weights
+
+Each request consumes a number of weight units depending on the type of operation. The table below lists the documented weight tiers.
+
+| Request Type | Weight |
+|--------------|--------|
+| `GET /api/v1/l2book` | 2 |
+| `GET /api/v1/all-mids` | 2 |
+| Most other `info` endpoints | 20 |
+| Exchange (on-chain) actions | `1 + floor(batch_length / 40)` |
+
+For paginated endpoints (`GET /api/v1/historical-orders`, etc.), additional weight is added per 20 items returned.
+
+<Info>
+  To estimate your per-minute weight consumption for a given polling pattern, multiply the endpoint weight by your calls-per-minute frequency. For example, polling `GET /api/v1/all-mids` (weight 2) once per second consumes 120 weight per minute — 10% of your total budget.
+</Info>
+
+## WebSocket Rate Limits
+
+WebSocket limits are enforced independently from REST limits. Each limit applies per originating IP address.
+
+| Limit | Value |
+|-------|-------|
+| Concurrent connections | 100 per IP |
+| Total active subscriptions | 1,000 per IP |
+| Messages sent per minute | 2,000 per minute |
+| User-specific subscriptions | 10 unique users |
+
+The messages-per-minute limit counts every frame you send to the server — subscription requests, unsubscription requests, and pings all count toward the 2,000-message cap.
+
+## Handling HTTP 429 Responses
+
+When you exceed your weight budget, the API responds with an `HTTP 429` status and an error body:
+
+```json
+{
+  "error": "Rate limit exceeded. Please wait before sending further requests."
+}
+```
+
+Implement a back-off strategy to handle this gracefully:
+
+```typescript
+import { api } from '@fibe/sdk';
+
+const apiClient = api.createApiClient('https://api.fibe.com');
+
+async function fetchWithBackoff<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delayMs = 60_000
+): Promise<T> {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      const isRateLimit =
+        error?.message?.includes('429') ||
+        error?.message?.includes('Rate limit');
+
+      if (isRateLimit && attempt < retries - 1) {
+        console.warn(`Rate limit hit — waiting ${delayMs / 1000}s before retry ${attempt + 1}`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Max retries reached');
+}
+
+// Usage
+const mids = await fetchWithBackoff(() => apiClient.getAllMids());
+```
+
+<Warning>
+  Do not retry immediately after receiving a `429`. The rate limit window is per minute, so retrying within the same window will continue to fail. Wait until the next minute boundary or implement exponential back-off with a minimum delay of 60 seconds.
+</Warning>
+
+## Best Practices
+
+Following these guidelines will help you stay comfortably within rate limits while building responsive applications.
+
+<Tip>
+  Use **WebSocket subscriptions** instead of polling REST endpoints for any data that updates frequently — prices, order books, and recent trades all have real-time WebSocket channels. A single WebSocket subscription costs no weight budget and delivers updates the moment they occur, making it far more efficient than repeated REST polling.
+</Tip>
+
+### Cache Market Metadata
+
+Market metadata (market indices, tick sizes, lot sizes, and mint addresses) rarely changes. Fetch it once at application start-up and cache it in memory for the lifetime of your process. This eliminates repeated calls to `GET /api/v1/markets` and `GET /api/v1/market`.
+
+```typescript
+import { api } from '@fibe/sdk';
+
+const apiClient = api.createApiClient('https://api.fibe.com');
+
+// Fetch once at startup and cache for the lifetime of your process
+const markets = await apiClient.getMarkets();
+const marketByName = new Map(markets.map(m => [m.market, m]));
+const marketByIndex = new Map(markets.map(m => [m.marketIndex, m]));
+
+// Resolve a market index with zero additional API calls
+function getMarketIndex(name: string): number {
+  const market = marketByName.get(name);
+  if (!market) throw new Error(`Unknown market: ${name}`);
+  return market.marketIndex;
+}
+```
+
+### Use WebSocket for Real-Time Prices
+
+Polling `GET /api/v1/all-mids` (weight 2) every second across 10 markets would consume 120 weight units per minute. Subscribing to the `allMids` WebSocket channel instead delivers the same data at zero REST weight cost:
+
+```typescript
+import { api } from '@fibe/sdk';
+
+const subscriptions = await api.WebSocketSubscriptions.create(
+  'wss://api.fibe.com/ws',
+  (error) => console.error('WebSocket error:', error)
+);
+
+subscriptions.subscribeToAllMids((mids) => {
+  console.log('SOL-USDC mid:', mids['0']);
+});
+```
+
+### Prioritise Expensive Endpoints
+
+`GET /api/v1/candles` is among the heaviest REST endpoints. Because most info endpoints carry a weight of 20, a burst of 60 candle requests would exhaust your entire per-minute budget. Apply these strategies:
+
+- **Narrow your time range.** Request only the candles you need rather than fetching weeks of data at once.
+- **Increase the interval.** Prefer `1h` or `4h` candles over `1m` unless you need minute-level granularity.
+- **Cache historical data locally.** Store fetched candles in a local database or cache and only request the delta (new candles since your last fetch) on subsequent calls.
+
+### Spread Load Across the Minute Window
+
+If your application needs to fan out requests to many markets simultaneously, stagger them evenly across the minute rather than firing all calls at once. This prevents burst exhaustion and keeps your average well below the limit:
+
+```typescript
+async function fetchAllMarketStats(marketIndices: number[], apiClient: ReturnType<typeof api.createApiClient>) {
+  const results = [];
+
+  for (const marketIndex of marketIndices) {
+    results.push(await apiClient.getMarketStats({ marketIndex }));
+
+    // Add a short delay to avoid bursting many requests simultaneously.
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  return results;
+}
+```

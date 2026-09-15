@@ -1,0 +1,70 @@
+---
+title: "Execute Trades at Optimal Prices with Instant Trade"
+sidebarTitle: "Instant Trade"
+description: "Instant Trade analyses multiple Solana liquidity sources to find the best execution price automatically — ideal for large or time-sensitive trades."
+---
+
+Instant Trade is Fibe's smart order execution engine. Instead of routing your trade through a single liquidity pool, Instant Trade analyses multiple sources simultaneously — order books, AMM pools, and routing paths across the Solana ecosystem — and constructs the optimal execution plan on your behalf. The result is better pricing, less slippage, and higher fill rates, particularly for trades that would otherwise move the market on a single venue.
+
+## How Instant Trade Differs from a Standard Swap
+
+Both Instant Trade and the standard Swap feature let you exchange one token for another in a single action, but they work differently under the hood.
+
+| Feature | Standard Swap | Instant Trade |
+|---|---|---|
+| **Routing** | Single liquidity pool | Aggregates across multiple sources |
+| **Order splitting** | Single route | Automatically splits across routes |
+| **Best for** | Small, common pairs | Larger sizes or less liquid pairs |
+| **Price discovery** | Single pool price | Best composite price across sources |
+| **Execution speed** | Immediate | Immediate (same on-chain confirmation) |
+| **Slippage** | Higher for large sizes | Minimised via route splitting |
+
+For everyday small swaps on major pairs like SOL-USDC, the standard swap is fast and convenient. For larger trades, or when you're moving between less common token pairs, Instant Trade consistently delivers better outcomes.
+
+## How to Use Instant Trade
+
+<Steps>
+  <Step title="Open Instant Trade">
+    Select **Instant Trade** from the main navigation or from the trade type selector on the trading interface. The layout is similar to the standard swap but includes additional routing detail in the quote.
+  </Step>
+  <Step title="Choose your tokens">
+    Select the token you want to sell in the **From** field and the token you want to receive in the **To** field. Fibe populates your wallet balances automatically.
+  </Step>
+  <Step title="Enter the trade size">
+    Type the amount you want to sell. As you type, Instant Trade queries multiple liquidity sources in real time and assembles the optimal route. You'll see the **estimated output**, **route breakdown**, and **effective price** update live.
+  </Step>
+  <Step title="Review the execution plan">
+    Before confirming, examine the quote details:
+    - **Effective price** — the blended price across all routes used
+    - **Route split** — the percentage of your order directed to each liquidity source
+    - **Price impact** — the combined market impact across all routes
+    - **Estimated fees** — total fees across all routes
+    - **Minimum received** — guaranteed minimum after slippage tolerance
+  </Step>
+  <Step title="Confirm and sign">
+    Click **Execute Instant Trade**. Review the final confirmation modal and click **Confirm**. Approve the transaction in your Solana wallet. Fibe submits the optimised transaction bundle to the Solana network.
+  </Step>
+  <Step title="View your confirmation">
+    Once all legs of the transaction confirm on-chain, Fibe shows a success summary with the actual amount received and the Solana Explorer link. Your updated balances are reflected immediately.
+  </Step>
+</Steps>
+
+## Choosing the Right Execution Method
+
+Use this guide to pick the approach that fits your situation:
+
+<CardGroup cols={3}>
+  <Card title="Standard Swap" icon="arrows-rotate">
+    **Best for:** Quick trades on liquid pairs (SOL-USDC, USDC-USDT) where trade size is small relative to pool depth. Fast and simple with no routing overhead.
+  </Card>
+  <Card title="Instant Trade" icon="bolt">
+    **Best for:** Larger trade sizes, less liquid token pairs, or any situation where you want Fibe to automatically minimise slippage by splitting across routes. Use this as your default for non-trivial amounts.
+  </Card>
+  <Card title="Limit Order" icon="sliders">
+    **Best for:** When execution price matters more than execution speed. Set your exact target price and let the market come to you. See [Orders](/trading/market-and-limit-orders) for details.
+  </Card>
+</CardGroup>
+
+<Tip>
+  For large trades — generally anything above $10,000 equivalent — always prefer Instant Trade over the standard Swap. The route-splitting algorithm can meaningfully reduce your price impact, often saving more than the marginal difference in complexity. Monitor the **price impact** field: if it shows above 1%, Instant Trade is almost certainly the better choice.
+</Tip>

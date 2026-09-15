@@ -1,0 +1,84 @@
+---
+title: "Fibe: Next-Generation Solana Trading Platform Overview"
+sidebarTitle: "Introduction"
+description: "Fibe is a Solana-based trading platform for swapping tokens, placing orders, trading perpetuals, tracking wallets, and building automated strategies."
+---
+
+Fibe is a next-generation decentralized trading platform built on Solana, designed to give you the speed and depth of a centralized exchange without surrendering control of your assets. Whether you want to swap tokens in seconds, place precise limit orders, trade perpetual futures through Hyperliquid, monitor other wallets, or connect a custom trading bot via the REST API and TypeScript SDK — Fibe brings it all together in one platform.
+
+## Get Started
+
+<CardGroup cols={2}>
+  <Card title="Create Your Account" icon="user-plus" href="/getting-started/signup">
+    Connect your Solana wallet and set up your Fibe account in minutes. Non-custodial by design — your keys stay with you.
+  </Card>
+  <Card title="Start Trading" icon="arrow-right-arrow-left" href="/trading/swap">
+    Swap tokens instantly or place market and limit orders with full control over price and execution.
+  </Card>
+  <Card title="Discover Tokens" icon="magnifying-glass-chart" href="/tokens/finding-tokens">
+    Explore trending tokens, analyze on-chain data, and surface opportunities with Fibe's token discovery tools.
+  </Card>
+  <Card title="Developer API" icon="code" href="/developers/api-overview">
+    Integrate Fibe into your own apps and bots using the REST Info API, WebSocket streams, and TypeScript SDK.
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<CardGroup cols={3}>
+  <Card title="Spot Trading" icon="chart-candlestick">
+    Execute instant swaps or place market and limit orders across a wide range of Solana token pairs with low fees and fast on-chain settlement.
+  </Card>
+  <Card title="Perpetuals" icon="infinity">
+    Trade perpetual futures powered by Hyperliquid directly from your Fibe portfolio. Access leverage and advanced order types without leaving the platform.
+  </Card>
+  <Card title="Wallet Tracking" icon="binoculars">
+    Follow any Solana wallet and get real-time alerts on trades, position changes, and on-chain activity — including Twitter-linked wallet previews.
+  </Card>
+  <Card title="Token Discovery" icon="telescope">
+    Use Pulse, Similar Tokens, and Trader Scan to find emerging tokens before they trend. Filter by volume, liquidity, holder growth, and more.
+  </Card>
+  <Card title="Staking" icon="layer-group">
+    Put your idle assets to work. Stake supported tokens directly from your Fibe portfolio and track rewards alongside your trading positions.
+  </Card>
+  <Card title="Developer API" icon="terminal">
+    Query real-time market data over REST or WebSocket, and execute on-chain trades programmatically with the TypeScript SDK and Exchange Client.
+  </Card>
+</CardGroup>
+
+## Platform Architecture
+
+Fibe is built as two complementary layers that work together — a consumer-facing UI for everyday trading, and a developer-facing API layer for programmatic access.
+
+### Consumer Interface
+
+The Fibe web app gives you a full-featured trading dashboard: live orderbooks, candle charts, portfolio views, wallet tracking, and perpetuals trading — all accessible through your connected Solana wallet. No account registration with a custodian is required; every action is signed by your wallet and settled on-chain.
+
+### Developer and API Layer
+
+For developers and algorithmic traders, Fibe exposes two distinct components:
+
+**Info API (REST)**
+The Info API provides read-only access to all market data over standard HTTP. You can fetch current markets, orderbooks, recent trades, historical candles, and live user orders — no authentication required. The base URL is `https://api.fibe.com`.
+
+**Exchange Client (On-chain)**
+Trading operations — placing, modifying, and cancelling orders — are executed directly on the Solana blockchain through the Fibe smart contract. These actions require a Solana wallet to sign each transaction. The TypeScript SDK's `ExchangeClient` handles transaction construction and submission for you, so you can focus on strategy logic rather than low-level Solana plumbing.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Your Application                        │
+└─────────────────────────────────────────────────────────────┘
+                │                           │
+                ▼                           ▼
+┌─────────────────────────┐   ┌─────────────────────────────┐
+│     Info API (REST)     │   │   Exchange Client (Solana)  │
+│  · Market data          │   │  · Place orders             │
+│  · Orderbooks           │   │  · Cancel orders            │
+│  · Candles & trades     │   │  · Modify orders            │
+│  · User order history   │   │  · Requires wallet signing  │
+└─────────────────────────┘   └─────────────────────────────┘
+```
+
+<Note>
+  A testnet environment is available at `https://api.fibe-testnet.com` so you can validate integrations before going live on mainnet.
+</Note>

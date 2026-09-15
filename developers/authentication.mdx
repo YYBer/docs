@@ -1,0 +1,180 @@
+---
+title: "Authenticate Requests to the Fibe API with Your Wallet"
+sidebarTitle: "Authentication"
+description: "The Fibe Info API is fully public — no credentials needed. The Exchange Client authenticates via your Solana wallet keypair for on-chain signing."
+---
+
+Authentication on Fibe works differently depending on which part of the API you are using. The Info API — covering all market data, order books, candles, and order history — is completely public and requires no API key, token, or header of any kind. The Exchange Client, which places and cancels orders directly on the Solana blockchain, authenticates through your Solana wallet keypair: every transaction is signed locally before it ever leaves your machine.
+
+## Info API: No Authentication Required
+
+Every `GET` endpoint under `https://api.fibe.com/api/v1/` is open to the public. You can start reading market data right now with a plain HTTP request — no registration, no API key, no `Authorization` header.
+
+```bash
+# Fetch all markets — no credentials needed
+curl https://api.fibe.com/api/v1/markets
+
+# Fetch mid prices for all markets
+curl https://api.fibe.com/api/v1/all-mids
+
+# Fetch the Level 2 order book for market index 0
+curl "https://api.fibe.com/api/v1/l2book?marketIndex=0&priceStep=0.01"
+```
+
+The same applies when using the TypeScript SDK. Simply create the API client with the base URL and call methods directly:
+
+```typescript
+import { api } from '@fibe/sdk';
+
+const apiClient = api.createApiClient('https://api.fibe.com');
+
+// No wallet, no headers — just call the method
+const markets = await apiClient.getMarkets();
+const mids    = await apiClient.getAllMids();
+```
+
+## Exchange Client: Wallet Authentication
+
+Trading operations — placing, modifying, and cancelling orders — are executed as Solana transactions signed by your wallet. The Exchange Client handles transaction construction; you supply a wallet that can sign.
+
+### Setting Up Your Wallet
+
+The Exchange Client accepts any object that satisfies the `Wallet` interface:
+
+```typescript
+interface Wallet {
+  publicKey: PublicKey;
+  signTransaction(tx: VersionedTransaction): Promise<VersionedTransaction>;
+}
+```
+
+The most direct approach for server-side applications and bots is to load a `Keypair` from its raw secret key bytes and wrap it in a signing adapter:
+
+```typescript
+import { api, exchange } from '@fibe/sdk';
+import { Connection, Keypair } from '@solana/web3.js';
+
+// Load your secret key — see the security note below for safe key management
+const secretKey = Uint8Array.from(JSON.parse(process.env.WALLET_SECRET_KEY!));
+const keypair   = Keypair.fromSecretKey(secretKey);
+
+const wallet = {
+  publicKey: keypair.publicKey,
+  signTransaction: async (tx: import('@solana/web3.js').VersionedTransaction) => {
+    tx.sign([keypair]);
+    return tx;
+  },
+};
+```
+
+### Initialising the Exchange Client
+
+Once you have a wallet, create the Exchange Client with a Solana `Connection` and the shared `apiClient`:
+
+```typescript
+import { api, exchange } from '@fibe/sdk';
+import { Connection, Keypair } from '@solana/web3.js';
+
+// 1. API client for market data (no auth)
+const apiClient = api.createApiClient('https://api.fibe.com');
+
+// 2. Solana RPC connection
+const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+
+// 3. Exchange Client — pass connection, commitment level, and apiClient
+const exchangeClient = new exchange.ExchangeClient(
+  connection,
+  'confirmed',
+  apiClient
+);
+
+// 4. Load your wallet
+const keypair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.WALLET_SECRET_KEY!)));
+const wallet = {
+  publicKey: keypair.publicKey,
+  signTransaction: async (tx: import('@solana/web3.js').VersionedTransaction) => {
+    tx.sign([keypair]);
+    return tx;
+  },
+};
+
+// 5. Place an order — signing happens locally inside sendAndConfirmTx
+const tx = await exchangeClient.placeLimitOrder({
+  owner:        wallet.publicKey,
+  marketIndex:  0,
+  price:        '100.50',
+  orderId:      BigInt(Date.now()),
+  side:         exchange.Side.Bid,
+  baseQuantity: '1.0',
+});
+
+await exchangeClient.sendAndConfirmTx(tx, wallet);
+```
+
+<Note>
+  All transaction signing happens entirely on your machine. Your private key is used only to sign the serialised Solana transaction locally — it is never sent to Fibe's servers or any other remote endpoint.
+</Note>
+
+### Using a Browser Wallet Adapter
+
+If you are building a web application, you can use any Solana wallet adapter (Phantom, Backpack, Solflare, etc.) instead of a `Keypair`. The adapter already exposes `publicKey` and `signTransaction`, so it satisfies the `Wallet` interface directly:
+
+```typescript
+import { useWallet } from '@solana/wallet-adapter-react';
+import { api, exchange } from '@fibe/sdk';
+import { Connection } from '@solana/web3.js';
+
+function TradingComponent() {
+  const wallet = useWallet(); // { publicKey, signTransaction, ... }
+
+  const apiClient     = api.createApiClient('https://api.fibe.com');
+  const connection    = new Connection('https://api.mainnet-beta.solana.com');
+  const exchangeClient = new exchange.ExchangeClient(connection, 'confirmed', apiClient);
+
+  const placeOrder = async () => {
+    if (!wallet.publicKey || !wallet.signTransaction) return;
+
+    const tx = await exchangeClient.placeLimitOrder({
+      owner:        wallet.publicKey,
+      marketIndex:  0,
+      price:        '100.00',
+      orderId:      BigInt(Date.now()),
+      side:         exchange.Side.Bid,
+      baseQuantity: '0.5',
+    });
+
+    await exchangeClient.sendAndConfirmTx(tx, {
+      publicKey:       wallet.publicKey,
+      signTransaction: wallet.signTransaction,
+    });
+  };
+
+  return <button onClick={placeOrder}>Place Order</button>;
+}
+```
+
+## Security Best Practices
+
+<Warning>
+  Never hard-code your secret key in source code, commit it to version control, or expose it in client-side JavaScript bundles. Anyone who obtains your secret key gains full control over your wallet and all associated funds.
+</Warning>
+
+Follow these practices to keep your keys safe:
+
+- **Use environment variables.** Store your secret key in a `.env` file or a secrets manager (AWS Secrets Manager, HashiCorp Vault, etc.) and load it at runtime via `process.env`.
+- **Add `.env` to `.gitignore`.** Ensure your secrets file is never committed to version control.
+- **Use a dedicated trading wallet.** Create a separate Solana wallet for your trading bot or application rather than using your main wallet. Keep only the funds required for active trading in it.
+- **Restrict RPC permissions where possible.** Some RPC providers let you scope API keys to specific methods — restrict them to the minimum your application needs.
+
+## Authentication Errors
+
+The Info API does not return authentication errors because no credentials are required. The Exchange Client surfaces authentication and signing problems as exceptions thrown by the Solana SDK, or as on-chain transaction errors.
+
+| Scenario | What Happens |
+|----------|--------------|
+| Wrong keypair for an order | Transaction rejected on-chain with a program error |
+| Malformed secret key bytes | `Keypair.fromSecretKey` throws immediately |
+| Wallet not passed to `sendAndConfirmTx` | Runtime error before the transaction is submitted |
+| Insufficient SOL for transaction fees | Transaction simulation fails before broadcast |
+
+If a request to the Info API fails with an `HTTP 400` status, the error is always caused by invalid query parameters — not by missing authentication. Check the `error` field in the response body for a description.

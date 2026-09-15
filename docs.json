@@ -1,0 +1,100 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Fibe",
+  "theme": "luma",
+  "colors": {
+    "primary": "#6C47FF",
+    "light": "#EDE9FF",
+    "dark": "#3A1FCC"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Platform",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "getting-started/introduction",
+              "getting-started/signup",
+              "getting-started/referral-program",
+              "getting-started/rewards-and-points"
+            ]
+          },
+          {
+            "group": "Trading",
+            "pages": [
+              "trading/swap",
+              "trading/market-and-limit-orders",
+              "trading/instant-trade",
+              "trading/convert",
+              "trading/perpetuals",
+              "trading/migration-actions"
+            ]
+          },
+          {
+            "group": "Discover Tokens",
+            "pages": [
+              "tokens/buy-crypto",
+              "tokens/finding-tokens",
+              "tokens/explore-tokens",
+              "tokens/pulse",
+              "tokens/similar-tokens"
+            ]
+          },
+          {
+            "group": "Portfolio & Wallets",
+            "pages": [
+              "portfolio/deposit-and-withdraw",
+              "portfolio/staking",
+              "portfolio/multi-wallet",
+              "portfolio/wallet-tracking",
+              "portfolio/trader-scan"
+            ]
+          },
+          {
+            "group": "Fees",
+            "pages": [
+              "fees/fibe-fees",
+              "fees/solana-fees"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developers",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "developers/api-overview",
+              "developers/authentication",
+              "developers/rate-limits"
+            ]
+          },
+          {
+            "group": "TypeScript SDK",
+            "pages": [
+              "developers/typescript-sdk",
+              "developers/websocket",
+              "developers/code-examples"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "developers/api-reference"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/YYBer"
+    }
+  }
+}

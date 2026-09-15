@@ -1,0 +1,80 @@
+---
+title: "Perpetual Futures Trading on Fibe via Hyperliquid DEX"
+sidebarTitle: "Perpetuals"
+description: "Access perpetual futures with leverage directly on Fibe, powered by Hyperliquid's deep liquidity engine — no separate account or platform needed."
+---
+
+Fibe integrates Hyperliquid's perpetual futures engine so you can trade leveraged positions on major crypto assets without leaving the platform. Perpetuals are available alongside Fibe's spot trading features, using the same wallet and portfolio interface you already know. Whether you're hedging a spot position or seeking leveraged exposure, the Perpetuals section gives you access to deep liquidity, tight spreads, and flexible leverage — all from within Fibe.
+
+## What Are Perpetual Futures?
+
+Perpetual futures (or "perps") are derivative contracts that let you speculate on the price of an asset — or hedge an existing position — without owning the asset itself. Unlike traditional futures contracts, perpetuals have no expiry date; they remain open until you close the position or it is liquidated.
+
+Key characteristics of perpetuals:
+- **Long** positions profit when the asset's price rises; **Short** positions profit when it falls
+- **Leverage** amplifies both gains and losses relative to your margin deposit
+- **Funding rates** are periodic payments exchanged between long and short holders to keep the contract price anchored to the spot market
+- **Liquidation** occurs automatically if your margin falls below the maintenance threshold, closing your position to prevent a negative balance
+
+## Hyperliquid Integration
+
+Fibe's perpetuals are powered by [Hyperliquid](https://hyperliquid.gitbook.io), a high-performance decentralised derivatives exchange. The integration provides:
+
+- **Deep liquidity** — Hyperliquid's central limit order book aggregates liquidity from a large network of market makers, keeping spreads tight even for sizable positions
+- **High leverage** — up to the maximum leverage available per market (varies by asset)
+- **Transparent funding rates** — funding payments are calculated and settled on-chain on a regular schedule, visible in your position details
+- **On-chain settlement** — all positions and liquidations are settled transparently on the Hyperliquid chain, with no custodial risk
+
+Your Fibe account connects to Hyperliquid seamlessly — no separate registration or asset transfer is required beyond the initial margin deposit.
+
+## How to Open a Perpetuals Position
+
+<Steps>
+  <Step title="Navigate to Perpetuals">
+    Click **Perpetuals** in the main navigation. The Perpetuals interface displays available markets, a price chart, the order book, and your current positions and margin balance.
+  </Step>
+  <Step title="Select a market">
+    Choose the asset you want to trade from the market selector — for example, **BTC-PERP** or **SOL-PERP**. The order form, chart, and order book update to show data for that market.
+  </Step>
+  <Step title="Choose Long or Short">
+    Click **Long** (green) if you expect the price to rise, or **Short** (red) if you expect it to fall. Your selection determines the direction of your position.
+  </Step>
+  <Step title="Set your leverage">
+    Use the leverage slider or input field to choose your desired leverage multiplier (e.g. 2×, 5×, 10×). Higher leverage increases both potential profit and the risk of liquidation. The interface shows how leverage affects your **liquidation price** in real time.
+  </Step>
+  <Step title="Enter your position size">
+    Enter the position size in the base asset (e.g. BTC) or in USD notional value, depending on the toggle. Fibe calculates the **initial margin** required at your chosen leverage and displays it alongside the order.
+  </Step>
+  <Step title="Review the liquidation price">
+    Before confirming, check the **liquidation price** displayed in the order summary. This is the price at which your position will be automatically closed. Ensure you're comfortable with this level given current market volatility.
+  </Step>
+  <Step title="Confirm and open the position">
+    Click **Open Long** or **Open Short**. Approve the transaction in your Solana wallet. Once confirmed, your position appears in the **Positions** panel at the bottom of the screen with live PnL, margin, and funding rate data.
+  </Step>
+</Steps>
+
+## Key Concepts
+
+<Accordion title="Leverage">
+  Leverage lets you control a position larger than your deposited margin. At 10× leverage, a $100 margin deposit controls a $1,000 position. A 10% price move in your favour doubles your margin; a 10% move against you wipes it out. Fibe displays your effective leverage and required margin in real time as you adjust position size.
+</Accordion>
+
+<Accordion title="Funding Rate">
+  The funding rate is a periodic payment exchanged between long and short position holders, designed to keep the perpetual contract price anchored to the underlying spot price. When the funding rate is **positive**, longs pay shorts. When it is **negative**, shorts pay longs. Funding is settled at regular intervals (typically every 8 hours). Your accrued funding appears in your position details and affects your overall PnL.
+</Accordion>
+
+<Accordion title="Liquidation Price">
+  The liquidation price is the market price at which your position's margin falls to the maintenance margin threshold and is automatically closed by the system. It is calculated based on your entry price, position size, leverage, and any accrued funding. Adding more margin to an open position (reducing effective leverage) moves the liquidation price further away from the current market price.
+</Accordion>
+
+<Accordion title="Margin">
+  Margin is the collateral you deposit to open and maintain a leveraged position. **Initial margin** is the amount required to open the position. **Maintenance margin** is the minimum amount that must remain in the position; falling below this triggers liquidation. You can deposit additional margin into an open position at any time to reduce liquidation risk.
+</Accordion>
+
+<Warning>
+  Leveraged trading carries significant risk of rapid loss. If the market moves against your position, your entire margin deposit can be lost to liquidation. Never trade with leverage using funds you cannot afford to lose. Start with low leverage (2×–3×) until you understand how funding rates, margin requirements, and liquidation mechanics interact in practice.
+</Warning>
+
+## Advanced Configuration
+
+For detailed documentation on Hyperliquid's order types, cross-margin and isolated-margin modes, advanced API access for perpetuals, and the underlying protocol mechanics, refer to the [Hyperliquid documentation](https://hyperliquid.gitbook.io).

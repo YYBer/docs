@@ -1,0 +1,118 @@
+---
+title: "Market and Limit Orders on Fibe: Complete Order Guide"
+sidebarTitle: "Orders"
+description: "Place market orders for instant execution or limit orders at your target price. Manage time-in-force settings and open orders on Fibe's Solana DEX."
+---
+
+Fibe's order interface gives you direct control over how and when your trades execute. Market orders fill immediately at the best available price, while limit orders let you set a specific price and wait for the market to come to you. Both order types interact directly with Fibe's on-chain order book on Solana, giving you full transparency and self-custody throughout.
+
+<Tabs>
+  <Tab title="Market Orders">
+    ## What Is a Market Order?
+
+    A market order instructs Fibe to buy or sell a token immediately at the best price currently available in the order book. Execution is virtually instant, but the exact fill price depends on the liquidity present at the moment your transaction lands on-chain.
+
+    Market orders are best when:
+    - Speed of execution matters more than price precision
+    - You're trading a liquid pair (e.g. SOL-USDC) with a tight spread
+    - You want to enter or exit a position right away without waiting
+
+    ## How to Place a Market Order
+
+    <Steps>
+      <Step title="Select a trading pair">
+        Navigate to the **Trade** section and choose the token pair you want to trade from the market selector (e.g. SOL-USDC).
+      </Step>
+      <Step title="Choose Buy or Sell">
+        Click **Buy** to acquire the base token, or **Sell** to exchange it for the quote token. The order form updates to reflect your direction.
+      </Step>
+      <Step title="Select Market order type">
+        In the order type dropdown, select **Market**. The price field is disabled — your order will fill at the best available price.
+      </Step>
+      <Step title="Enter your quantity">
+        Type the amount of the base token you want to buy or sell. Fibe shows an estimated total value in the quote token based on current order book depth.
+      </Step>
+      <Step title="Confirm and sign">
+        Click **Place Market Order**. Review the confirmation modal, then approve the transaction in your Solana wallet. Your order is submitted to the on-chain order book and fills against the best available resting orders.
+      </Step>
+    </Steps>
+
+    <Note>
+      Market orders use **Immediate-or-Cancel (IoC)** time-in-force by default. Any portion of your order that cannot be filled against existing resting orders is automatically cancelled rather than left open.
+    </Note>
+  </Tab>
+
+  <Tab title="Limit Orders">
+    ## What Is a Limit Order?
+
+    A limit order lets you specify the exact price at which you want to buy or sell. Your order rests on the on-chain order book until the market reaches your price and a counterparty fills it, or until you cancel it.
+
+    Limit orders are best when:
+    - You have a target entry or exit price in mind
+    - You want to avoid the uncertainty of market-order slippage
+    - You're comfortable waiting for the market to reach your price
+    - You want to add liquidity and potentially pay lower fees (using PostOnly)
+
+    ## How to Place a Limit Order
+
+    <Steps>
+      <Step title="Select a trading pair">
+        Navigate to the **Trade** section and choose your token pair from the market selector.
+      </Step>
+      <Step title="Choose Buy or Sell">
+        Click **Buy** to place a bid at or below the current market price, or **Sell** to place an ask at or above it.
+      </Step>
+      <Step title="Select Limit order type">
+        In the order type dropdown, select **Limit**. The price field becomes editable.
+      </Step>
+      <Step title="Set your limit price">
+        Enter the price at which you want your order to execute. For a buy order, this is the maximum price you're willing to pay. For a sell order, it's the minimum price you'll accept.
+      </Step>
+      <Step title="Enter your quantity">
+        Type the amount of the base token you want to trade.
+      </Step>
+      <Step title="Choose a Time-in-Force">
+        Select how long your order should remain active from the **Time-in-Force** dropdown. See the section below for a full explanation of each option.
+      </Step>
+      <Step title="Confirm and sign">
+        Click **Place Limit Order**, review the details in the confirmation modal, then approve the transaction in your Solana wallet. Your order is placed on-chain and becomes visible in the order book.
+      </Step>
+    </Steps>
+
+    <Note>
+      Limit orders are executed on-chain via the Fibe smart contract and always require a wallet signature. The order remains on the Solana blockchain until it is filled, cancelled, or expired according to its time-in-force setting.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Time-in-Force Options
+
+Time-in-Force (TiF) controls what happens to a limit order that isn't immediately and fully matched. Choose the option that best fits your trading strategy.
+
+<Accordion title="Gtc — Good-till-Cancelled">
+  **Good-till-Cancelled** is the default for limit orders. Your order stays open on the order book indefinitely until it is completely filled or you manually cancel it. Use `Gtc` when you have a target price and are happy to wait as long as it takes for the market to reach it.
+</Accordion>
+
+<Accordion title="Ioc — Immediate-or-Cancel">
+  **Immediate-or-Cancel** attempts to fill your order right away at the specified price or better. Any portion of the order that cannot be matched immediately is cancelled — nothing rests on the order book. Use `Ioc` when you want a limit price guarantee but don't want an open order lingering after the attempt.
+</Accordion>
+
+<Accordion title="PostOnly">
+  **PostOnly** ensures your order only ever adds liquidity to the order book — it will never cross the spread and match an existing order on placement. If your order would immediately execute as a taker, it is cancelled instead. Use `PostOnly` when you want to guarantee maker-side fee treatment and avoid accidentally taking liquidity.
+</Accordion>
+
+<Accordion title="Fok — Fill-or-Kill">
+  **Fill-or-Kill** requires your entire order to be filled immediately and in full. If the order book cannot satisfy the complete quantity at your specified price the moment the order arrives, the entire order is cancelled. Use `Fok` when partial fills are unacceptable — for example, in arbitrage strategies where you need all legs to execute atomically.
+</Accordion>
+
+## Managing Open Orders
+
+All your active limit orders are listed in the **Open Orders** panel below the order form.
+
+- **View details** — Each row shows the pair, side (Buy/Sell), limit price, original quantity, remaining quantity, and the time the order was placed.
+- **Cancel an order** — Click the **✕** button on any open order row. Confirm the cancellation in your wallet. The transaction is submitted on-chain and the order is removed from the book once confirmed.
+- **Cancel all orders** — Use the **Cancel All** button at the top of the Open Orders panel to cancel every open order for the current market in a single transaction.
+
+<Tip>
+  Completed and cancelled orders appear in the **Order History** tab. Each entry shows the final status — `Filled (F)`, `Cancelled (C)`, or `Open (O)` — along with fill details and timestamps.
+</Tip>

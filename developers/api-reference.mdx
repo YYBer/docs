@@ -1,0 +1,647 @@
+---
+title: "Fibe REST API Reference: Markets, Orders, and Trades"
+sidebarTitle: "REST API"
+description: "Full reference for all nine Fibe REST API endpoints under https://api.fibe.com/api/v1. Public, read-only, no authentication required."
+---
+
+The Fibe Info API is a public, read-only REST API that gives you programmatic access to market data, orderbooks, recent trades, candlestick history, and wallet order information. All endpoints live under the base URL `https://api.fibe.com/api/v1`, accept query parameters only, and return JSON — no API key or authentication header is required to call any of them.
+
+## Endpoint Quick Reference
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/markets` | List all available trading markets |
+| `GET` | `/market` | Get details for a single market |
+| `GET` | `/all-mids` | Get current mid prices for all markets |
+| `GET` | `/market-stats` | Get 24-hour statistics for a market |
+| `GET` | `/l2book` | Get Level 2 orderbook for a market |
+| `GET` | `/recent-market-trades` | Get recent trades for a market |
+| `GET` | `/candles` | Get OHLCV candlestick data |
+| `GET` | `/open-orders` | Get all open orders for a wallet |
+| `GET` | `/historical-orders` | Get paginated order history for a wallet |
+
+---
+
+## Markets
+
+### GET /markets
+
+Returns the full list of all trading markets available on Fibe, including token mint addresses, decimal precision, and tick/lot size parameters you need to correctly format order quantities and prices.
+
+**Request**
+
+```bash
+curl https://api.fibe.com/api/v1/markets
+```
+
+**Response**
+
+```json
+[
+  {
+    "market": "So11111111111111111111111111111111111111112",
+    "marketIndex": 0,
+    "baseMint": "So11111111111111111111111111111111111111112",
+    "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "baseDecimals": 9,
+    "quoteDecimals": 6,
+    "tickSizeInQuoteBaseUnits": 100,
+    "lotSizeInBaseBaseUnits": 1000000,
+    "label": "SPOT",
+    "lookupTable": "4syr8WpMDQZnggCiQbND6RsGs1A21HCyFEEf7SBwFMNs"
+  }
+]
+```
+
+<ResponseField name="market" type="string" required>
+  The Solana on-chain address that identifies this market.
+</ResponseField>
+
+<ResponseField name="marketIndex" type="integer" required>
+  The unique numeric index used to reference this market in all other API calls.
+</ResponseField>
+
+<ResponseField name="baseMint" type="string" required>
+  The Solana mint address of the base token (the asset being bought or sold).
+</ResponseField>
+
+<ResponseField name="quoteMint" type="string" required>
+  The Solana mint address of the quote token (the asset used as payment).
+</ResponseField>
+
+<ResponseField name="baseDecimals" type="integer" required>
+  The number of decimal places for the base token. Use this when converting between raw on-chain amounts and human-readable quantities.
+</ResponseField>
+
+<ResponseField name="quoteDecimals" type="integer" required>
+  The number of decimal places for the quote token.
+</ResponseField>
+
+<ResponseField name="tickSizeInQuoteBaseUnits" type="integer" required>
+  The minimum price increment expressed in quote base units. All limit order prices must be a multiple of this value.
+</ResponseField>
+
+<ResponseField name="lotSizeInBaseBaseUnits" type="integer" required>
+  The minimum quantity increment expressed in base base units. All order sizes must be a multiple of this value.
+</ResponseField>
+
+<ResponseField name="label" type="string">
+  An optional human-readable category label for the market (e.g., `"SPOT"`).
+</ResponseField>
+
+<ResponseField name="lookupTable" type="string">
+  The Solana Address Lookup Table used to compress transaction size when placing orders on-chain.
+</ResponseField>
+
+---
+
+### GET /market
+
+Returns the details for a single market identified by its numeric index. The response shape is identical to a single element from `GET /markets`.
+
+<ParamField query="marketIndex" type="integer" required>
+  The numeric index of the market to retrieve.
+</ParamField>
+
+**Request**
+
+```bash
+curl "https://api.fibe.com/api/v1/market?marketIndex=0"
+```
+
+**Response**
+
+```json
+{
+  "market": "So11111111111111111111111111111111111111112",
+  "marketIndex": 0,
+  "baseMint": "So11111111111111111111111111111111111111112",
+  "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "baseDecimals": 9,
+  "quoteDecimals": 6,
+  "tickSizeInQuoteBaseUnits": 100,
+  "lotSizeInBaseBaseUnits": 1000000
+}
+```
+
+<Note>
+  The response fields are identical to those in `GET /markets`. See the field descriptions above for details.
+</Note>
+
+---
+
+## Prices
+
+### GET /all-mids
+
+Returns the current mid-price for every active market in a single request. The response is a plain JSON object whose keys are market index strings and whose values are mid-price decimal strings. Use this endpoint to get a lightweight price snapshot across all markets without iterating through individual market-stats calls.
+
+**Request**
+
+```bash
+curl https://api.fibe.com/api/v1/all-mids
+```
+
+**Response**
+
+```json
+{
+  "0": "103.45",
+  "1": "0.00001234",
+  "2": "24.87"
+}
+```
+
+<ResponseField name="{marketIndex}" type="string" required>
+  A market index (as a string key) mapped to its current mid-price as a decimal string. The mid-price is the average of the best bid and best ask.
+</ResponseField>
+
+---
+
+### GET /market-stats
+
+Returns rolling 24-hour trading statistics for a single market, including base and quote volume and the price 24 hours ago. Use this to calculate price change percentage or display volume figures in a market summary UI.
+
+<ParamField query="marketIndex" type="integer" required>
+  The numeric index of the market to query.
+</ParamField>
+
+**Request**
+
+```bash
+curl "https://api.fibe.com/api/v1/market-stats?marketIndex=0"
+```
+
+**Response**
+
+```json
+{
+  "bv24h": "125432.567",
+  "qv24h": "12984532.45",
+  "px": "103.45",
+  "px24hAgo": "101.23"
+}
+```
+
+<ResponseField name="bv24h" type="string" required>
+  The 24-hour cumulative trading volume denominated in the base token.
+</ResponseField>
+
+<ResponseField name="qv24h" type="string" required>
+  The 24-hour cumulative trading volume denominated in the quote token.
+</ResponseField>
+
+<ResponseField name="px" type="string | null">
+  The most recent traded price. Returns `null` if the market has no trades yet.
+</ResponseField>
+
+<ResponseField name="px24hAgo" type="string | null">
+  The traded price at exactly 24 hours before the current time. Returns `null` if no trade existed at that point.
+</ResponseField>
+
+---
+
+## Orderbook
+
+### GET /l2book
+
+Returns the aggregated Level 2 orderbook for a market. Bids are sorted by price descending (best bid first) and asks are sorted by price ascending (best ask first). The `priceStep` parameter controls the granularity of aggregation: levels closer together than the step are merged into a single row.
+
+<ParamField query="marketIndex" type="integer" required>
+  The numeric index of the market whose orderbook you want to fetch.
+</ParamField>
+
+<ParamField query="priceStep" type="integer" required>
+  The price aggregation step expressed as a scaled integer. Price levels within this step are combined. Must be greater than zero.
+</ParamField>
+
+**Request**
+
+```bash
+curl "https://api.fibe.com/api/v1/l2book?marketIndex=0&priceStep=100"
+```
+
+**Response**
+
+```json
+[
+  {
+    "market": 0,
+    "ps": 100,
+    "bids": [
+      { "px": "103.44", "sz": "125.5" },
+      { "px": "103.43", "sz": "250.0" },
+      { "px": "103.42", "sz": "500.0" }
+    ],
+    "asks": [
+      { "px": "103.46", "sz": "100.0" },
+      { "px": "103.47", "sz": "200.0" },
+      { "px": "103.48", "sz": "350.0" }
+    ]
+  }
+]
+```
+
+<ResponseField name="market" type="integer" required>
+  The market index this orderbook belongs to.
+</ResponseField>
+
+<ResponseField name="ps" type="integer" required>
+  The effective price step used for aggregation, reflected back from the request.
+</ResponseField>
+
+<ResponseField name="bids" type="array" required>
+  Aggregated bid levels sorted by price descending. Each element is a `BookLevel` object.
+
+  <Expandable title="BookLevel fields">
+    <ResponseField name="px" type="string" required>
+      The price for this aggregated level.
+    </ResponseField>
+    <ResponseField name="sz" type="string" required>
+      The total quantity available across all orders at this level.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="asks" type="array" required>
+  Aggregated ask levels sorted by price ascending. Each element is a `BookLevel` object with the same `px` and `sz` fields.
+</ResponseField>
+
+---
+
+## Trades
+
+### GET /recent-market-trades
+
+Returns the most recent trades that have been executed on the specified market. Each trade record includes the Solana transaction signature so you can verify the trade on-chain. The side field indicates which side was the taker: `B` for a buy taker and `A` for a sell taker.
+
+<ParamField query="marketIndex" type="integer" required>
+  The numeric index of the market to retrieve recent trades for.
+</ParamField>
+
+**Request**
+
+```bash
+curl "https://api.fibe.com/api/v1/recent-market-trades?marketIndex=0"
+```
+
+**Response**
+
+```json
+[
+  {
+    "market": 0,
+    "px": "103.45",
+    "sz": "10.5",
+    "side": "B",
+    "time": 1704067200000,
+    "oid": "1704067200000",
+    "txId": "5KQwrMKRTXxHkFGKNoBs3J3eCVBWGq7AJpsFjwHnRDGMf3oZFp5vhPwQDu2FZSM"
+  },
+  {
+    "market": 0,
+    "px": "103.42",
+    "sz": "5.0",
+    "side": "A",
+    "time": 1704067185000,
+    "oid": "1704067185000",
+    "txId": "3yZe7d9GQB2xLmVpT4WkNPdRqSoX1cMrHnKjUiYfEwCv8sA6tFbzIhgoDuJmLqP"
+  }
+]
+```
+
+<ResponseField name="market" type="integer" required>
+  The market index on which the trade occurred.
+</ResponseField>
+
+<ResponseField name="px" type="string" required>
+  The price at which the trade was executed.
+</ResponseField>
+
+<ResponseField name="sz" type="string" required>
+  The quantity of the base token that was traded.
+</ResponseField>
+
+<ResponseField name="side" type="string" required>
+  The taker's side. `"B"` means the taker was a buyer (bid); `"A"` means the taker was a seller (ask).
+</ResponseField>
+
+<ResponseField name="time" type="integer" required>
+  The Unix timestamp in milliseconds when the trade occurred on-chain.
+</ResponseField>
+
+<ResponseField name="oid" type="string" required>
+  The order ID of the taker order that triggered this trade.
+</ResponseField>
+
+<ResponseField name="txId" type="string" required>
+  The Solana transaction signature. Use this to verify the trade at `https://solscan.io/tx/{txId}`.
+</ResponseField>
+
+---
+
+## Candles
+
+### GET /candles
+
+Returns OHLCV (Open, High, Low, Close, Volume) candlestick data for the specified market and time range. You must supply a start timestamp, an end timestamp, and an interval. The API returns one candle per completed interval within the requested range.
+
+<ParamField query="marketIndex" type="integer" required>
+  The numeric index of the market to retrieve candle data for.
+</ParamField>
+
+<ParamField query="startTimestamp" type="integer" required>
+  The start of the time range as a Unix timestamp in milliseconds (inclusive).
+</ParamField>
+
+<ParamField query="endTimestamp" type="integer" required>
+  The end of the time range as a Unix timestamp in milliseconds (inclusive).
+</ParamField>
+
+<ParamField query="interval" type="string" required>
+  The candle interval. Must be one of the supported values listed below.
+</ParamField>
+
+**Supported Intervals**
+
+| Value | Duration |
+|-------|----------|
+| `1m` | 1 minute |
+| `3m` | 3 minutes |
+| `5m` | 5 minutes |
+| `15m` | 15 minutes |
+| `30m` | 30 minutes |
+| `1h` | 1 hour |
+| `2h` | 2 hours |
+| `4h` | 4 hours |
+| `8h` | 8 hours |
+| `12h` | 12 hours |
+| `1d` | 1 day |
+| `3d` | 3 days |
+| `1w` | 1 week |
+| `1M` | 1 month |
+
+**Request**
+
+```bash
+curl "https://api.fibe.com/api/v1/candles?marketIndex=0&startTimestamp=1704067200000&endTimestamp=1704153600000&interval=1h"
+```
+
+**Response**
+
+```json
+[
+  {
+    "market": 0,
+    "t": 1704067200000,
+    "T": 1704070799999,
+    "o": "103.00",
+    "h": "104.50",
+    "l": "102.80",
+    "c": "103.45",
+    "bv": "12543.5",
+    "qv": "1298453.67",
+    "n": 523
+  },
+  {
+    "market": 0,
+    "t": 1704070800000,
+    "T": 1704074399999,
+    "o": "103.45",
+    "h": "105.00",
+    "l": "103.10",
+    "c": "104.80",
+    "bv": "9821.3",
+    "qv": "1029847.55",
+    "n": 418
+  }
+]
+```
+
+<ResponseField name="market" type="integer" required>
+  The market index this candle belongs to.
+</ResponseField>
+
+<ResponseField name="t" type="integer" required>
+  The candle open time as a Unix timestamp in milliseconds.
+</ResponseField>
+
+<ResponseField name="T" type="integer" required>
+  The candle close time as a Unix timestamp in milliseconds (the last millisecond of the interval).
+</ResponseField>
+
+<ResponseField name="o" type="string" required>
+  The opening price of the candle.
+</ResponseField>
+
+<ResponseField name="h" type="string" required>
+  The highest price reached during the candle interval.
+</ResponseField>
+
+<ResponseField name="l" type="string" required>
+  The lowest price reached during the candle interval.
+</ResponseField>
+
+<ResponseField name="c" type="string" required>
+  The closing price of the candle.
+</ResponseField>
+
+<ResponseField name="bv" type="string" required>
+  The total base token volume traded during this candle interval.
+</ResponseField>
+
+<ResponseField name="qv" type="string" required>
+  The total quote token volume traded during this candle interval.
+</ResponseField>
+
+<ResponseField name="n" type="integer" required>
+  The number of individual trades that occurred during this candle interval.
+</ResponseField>
+
+---
+
+## User Orders
+
+The following two endpoints return Order objects. Both endpoints are read-only and require only the wallet address — no signature or authentication is needed.
+
+<Accordion title="Order object field reference">
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `market` | integer | The market index this order was placed on |
+| `oid` | string | Unique order identifier |
+| `type` | string | `"M"` for market order, `"L"` for limit order |
+| `px` | string | The order price (for limit orders) |
+| `side` | string | `"B"` for bid/buy, `"A"` for ask/sell |
+| `origSz` | string | The original order size when it was first placed |
+| `sz` | string | The remaining unfilled size |
+| `status` | string | `"O"` (Open), `"F"` (Filled), or `"C"` (Cancelled) |
+| `txId` | string | The Solana transaction signature for this order event |
+| `createdAt` | integer | Unix timestamp in milliseconds when the order was created |
+| `updatedAt` | integer | Unix timestamp in milliseconds of the most recent status change |
+
+</Accordion>
+
+---
+
+### GET /open-orders
+
+Returns all currently open orders for a given wallet address across all markets. An order is open if its status is `"O"` — meaning it has been placed on-chain and has remaining unfilled quantity.
+
+<ParamField query="user" type="string" required>
+  The Solana wallet address (base-58 encoded public key) to retrieve open orders for.
+</ParamField>
+
+**Request**
+
+```bash
+curl "https://api.fibe.com/api/v1/open-orders?user=7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
+```
+
+**Response**
+
+```json
+[
+  {
+    "market": 0,
+    "oid": "1704067200000",
+    "type": "L",
+    "px": "100.00",
+    "side": "B",
+    "origSz": "10.0",
+    "sz": "10.0",
+    "status": "O",
+    "txId": "5KQwrMKRTXxHkFGKNoBs3J3eCVBWGq7AJpsFjwHnRDGMf3oZFp5vhPwQDu2FZSM",
+    "createdAt": 1704067200000,
+    "updatedAt": 1704067200000
+  }
+]
+```
+
+<ResponseField name="market" type="integer" required>
+  The market index this order was placed on.
+</ResponseField>
+
+<ResponseField name="oid" type="string" required>
+  The unique order identifier.
+</ResponseField>
+
+<ResponseField name="type" type="string" required>
+  Order type: `"M"` for a market order or `"L"` for a limit order.
+</ResponseField>
+
+<ResponseField name="px" type="string" required>
+  The limit price of the order.
+</ResponseField>
+
+<ResponseField name="side" type="string" required>
+  `"B"` if this is a buy (bid) order; `"A"` if this is a sell (ask) order.
+</ResponseField>
+
+<ResponseField name="origSz" type="string" required>
+  The original size of the order when it was placed on-chain.
+</ResponseField>
+
+<ResponseField name="sz" type="string" required>
+  The remaining unfilled quantity. For a fully open order, this equals `origSz`.
+</ResponseField>
+
+<ResponseField name="status" type="string" required>
+  The current order status. For this endpoint all returned orders have status `"O"` (Open).
+</ResponseField>
+
+<ResponseField name="txId" type="string" required>
+  The Solana transaction signature of the on-chain order placement.
+</ResponseField>
+
+<ResponseField name="createdAt" type="integer" required>
+  Unix timestamp in milliseconds when the order was created on-chain.
+</ResponseField>
+
+<ResponseField name="updatedAt" type="integer" required>
+  Unix timestamp in milliseconds of the last status update for this order.
+</ResponseField>
+
+---
+
+### GET /historical-orders
+
+Returns a paginated list of all orders for a wallet address, regardless of status. This includes open, filled, and cancelled orders across all markets. Use the `page` and `pageSize` parameters to paginate through large order histories.
+
+<ParamField query="user" type="string" required>
+  The Solana wallet address (base-58 encoded public key) to retrieve order history for.
+</ParamField>
+
+<ParamField query="page" type="integer">
+  The zero-based page number to retrieve. Defaults to `0` (the first page).
+</ParamField>
+
+<ParamField query="pageSize" type="integer">
+  The number of orders to return per page. Defaults to `50`.
+</ParamField>
+
+**Request**
+
+```bash
+curl "https://api.fibe.com/api/v1/historical-orders?user=7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU&page=0&pageSize=50"
+```
+
+**Response**
+
+```json
+[
+  {
+    "market": 0,
+    "oid": "1704060000000",
+    "type": "L",
+    "px": "98.50",
+    "side": "B",
+    "origSz": "5.0",
+    "sz": "0.0",
+    "status": "F",
+    "txId": "3yZe7d9GQB2xLmVpT4WkNPdRqSoX1cMrHnKjUiYfEwCv8sA6tFbzIhgoDuJmLqP",
+    "createdAt": 1704060000000,
+    "updatedAt": 1704061800000
+  },
+  {
+    "market": 1,
+    "oid": "1704050000000",
+    "type": "M",
+    "px": "0.00001200",
+    "side": "A",
+    "origSz": "1000000.0",
+    "sz": "0.0",
+    "status": "C",
+    "txId": "8mNpQ4vRzKjLwXoTs6YfBcAdSuGh7ePiWrVnMkDyCxFb2tE9sZgIhqOuJlRmPkNw",
+    "createdAt": 1704050000000,
+    "updatedAt": 1704050500000
+  }
+]
+```
+
+<Note>
+  The response fields are identical to those in `GET /open-orders`. The `status` field can be `"O"` (Open), `"F"` (Filled), or `"C"` (Cancelled) in the historical endpoint. A `sz` value of `"0.0"` on a filled order indicates the order was fully executed.
+</Note>
+
+---
+
+## Error Responses
+
+All Fibe API errors return a JSON body with a single `error` field containing a human-readable description of what went wrong. Match your error handling against the HTTP status code first, then read the `error` string for debugging detail.
+
+```json
+{
+  "error": "Invalid market index"
+}
+```
+
+| Status | Meaning |
+|--------|---------|
+| `400` | **Bad Request** — One or more request parameters are missing, the wrong type, or out of the allowed range. Check the `error` message for the specific field. |
+| `404` | **Not Found** — The requested resource does not exist (e.g., an unknown market index). |
+| `429` | **Too Many Requests** — You have exceeded the rate limit of 1,200 weight per minute. Back off and retry after a short delay. |
+| `500` | **Internal Server Error** — An unexpected error occurred on the server. If this persists, contact Fibe support. |
+
+<Warning>
+  When you receive a `429` response, implement exponential backoff before retrying. Repeated rapid retries after hitting the rate limit will extend the time before your requests are accepted again.
+</Warning>

@@ -1,0 +1,70 @@
+---
+title: "Fibe Platform Fees: Trading, Swaps, and Perpetuals"
+sidebarTitle: "Platform Fees"
+description: "Learn about Fibe platform fees for trades, swaps, and perpetual futures — every charge is displayed before you confirm a transaction."
+---
+
+Fibe charges a small fee on trades and swaps to keep the platform running smoothly and to align incentives for liquidity providers. Every fee is calculated and shown to you **before** you confirm a transaction, so you always know exactly what you are paying. There are no hidden charges — what you see in the confirmation screen is what gets deducted.
+
+## Trading Fees
+
+Fibe uses a **maker/taker** model for order-book trades. The side of the market you take determines which fee tier applies:
+
+| Role | How You Qualify | Fee |
+|------|----------------|-----|
+| **Maker** | Your order rests on the book and adds liquidity (e.g., a limit order that does not fill immediately) | Competitive maker rate — shown in the trade preview |
+| **Taker** | Your order fills against existing liquidity immediately (e.g., a market order or an aggressive limit order) | Competitive taker rate — shown in the trade preview |
+
+The exact percentages for your account tier are always displayed in the order confirmation dialog before you submit. Fibe periodically updates its fee schedule based on market conditions and platform upgrades, so the confirmation screen is always the authoritative source.
+
+<Note>
+  Fee rates may vary by trading pair, account tier, or promotional period. Always check the **fee preview** in the trade confirmation screen to see the exact amount that will be charged for your specific order.
+</Note>
+
+### Maker vs. Taker at a Glance
+
+- **Maker orders** add depth to the order book and typically benefit from lower fees. A limit order placed at a price that does not immediately match rests on the book as a maker order.
+- **Taker orders** remove liquidity from the book and are charged a slightly higher fee. Market orders and limit orders that cross the spread fill immediately as taker orders.
+
+<Tip>
+  Use **PostOnly** limit orders to guarantee maker status. A PostOnly order is automatically cancelled if it would fill immediately, ensuring you never accidentally pay taker fees. See [Market and Limit Orders](/trading/market-and-limit-orders) to learn how to set the `PostOnly` time-in-force flag.
+</Tip>
+
+## Perpetual Futures Fees
+
+When you trade perpetual futures through Fibe's Hyperliquid integration, fees follow the same maker/taker structure. In addition, open perpetual positions accrue a **funding rate** — a periodic payment exchanged between long and short holders to keep the perpetual price anchored to the spot index. The current funding rate and next funding timestamp are visible on the trading screen.
+
+## Swap Fees
+
+Token swaps on Fibe route through one or more liquidity pools. The fee is built into the swap rate and is shown as a separate line item in the **swap preview** before you confirm:
+
+- The preview displays the input amount, expected output amount, price impact, and the total fee in both percentage and token terms.
+- Fees vary by liquidity pool and the tokens involved.
+- Swapping through multiple hops incurs fees at each pool; the preview always shows the cumulative cost.
+
+## How Fees Are Deducted
+
+Fibe deducts platform fees automatically at settlement — you do not need to approve a separate transaction:
+
+- **Spot trades and swaps** — the fee is subtracted from the **output token**. If you are buying Token B with Token A, you receive slightly less Token B after the fee is applied.
+- **Perpetual futures** — the fee is deducted from your **collateral balance** at the time the order fills or the position is settled.
+- **Cancellations** — there is no fee for cancelling an unfilled order.
+
+<Note>
+  Network fees (SOL) are separate from Fibe's platform fees and are paid directly to Solana validators. See [Solana Network Fees](/fees/solana-fees) for details on how to budget for those costs.
+</Note>
+
+## Fee Preview Before Confirmation
+
+Every action that incurs a platform fee surfaces a confirmation screen that lists:
+
+1. **Transaction type** — swap, limit order, market order, or futures trade.
+2. **Estimated fee amount** — displayed in the output token or as a percentage of the trade value.
+3. **Price impact** — relevant for swaps and large market orders.
+4. **Net amount received** — the final amount after all fees are applied.
+
+Review this screen carefully before tapping or clicking **Confirm**.
+
+<Accordion title="Why does the actual fee sometimes differ slightly from the estimate?">
+  Swap fees are calculated against the final execution price, which can shift between the time you request a quote and the time the transaction lands on-chain — especially during periods of high volatility. The confirmation screen shows the best estimate available at quote time. If the price moves beyond your slippage tolerance, the transaction reverts automatically and no fee is charged.
+</Accordion>

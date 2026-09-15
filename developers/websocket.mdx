@@ -1,0 +1,510 @@
+---
+title: "Fibe WebSocket API: Real-Time Data Streaming Guide"
+sidebarTitle: "WebSocket API"
+description: "Connect to the Fibe WebSocket API to stream live orderbook snapshots, trade events, mid-price ticks, OHLCV candle updates, and user order changes."
+---
+
+The Fibe WebSocket API delivers real-time market data and order status events with sub-second latency, eliminating the need to poll REST endpoints for time-sensitive information. You can subscribe to live orderbook snapshots, individual trade events, mid-price ticks across all markets, OHLCV candle updates, and per-user order status changes — all over a single persistent connection. The Fibe TypeScript SDK manages the connection lifecycle for you, but you can also connect with any standard WebSocket client.
+
+## Connection URLs
+
+Connect to the Fibe WebSocket endpoint at the URL for your target network:
+
+| Network | URL |
+|---------|-----|
+| Mainnet | `wss://api.fibe.com/ws` |
+| Testnet | `wss://api.fibe-testnet.com/ws` |
+
+### SDK Connection (Recommended)
+
+Use `api.WebSocketSubscriptions.create` to establish a managed connection. The SDK handles ping/pong keepalives, automatic reconnection, and subscription restoration after a disconnect.
+
+```typescript
+import { api } from '@fibe/sdk';
+
+const subscriptions = await api.WebSocketSubscriptions.create(
+  'wss://api.fibe.com/ws',
+  (error) => console.error('WebSocket error:', error)
+);
+```
+
+### Raw WebSocket Connection
+
+If you prefer to manage the connection yourself, connect with any standard WebSocket client:
+
+```typescript
+const ws = new WebSocket('wss://api.fibe.com/ws');
+
+ws.onopen = () => {
+  console.log('Connected to Fibe WebSocket');
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log('Received:', message);
+};
+
+ws.onerror = (error) => {
+  console.error('WebSocket error:', error);
+};
+
+ws.onclose = () => {
+  console.log('Disconnected from Fibe WebSocket');
+};
+```
+
+---
+
+## Subscription Channels
+
+### `l2Book` — Real-Time Orderbook
+
+Receive incremental orderbook snapshots aggregated at a given price step. Each message contains the full current state of the top-of-book.
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    const subscription = subscriptions.subscribeToL2Book(
+      0,      // marketIndex
+      0.01,   // priceStep
+      (data) => {
+        console.log('Best bid:', data.bids[0]);
+        console.log('Best ask:', data.asks[0]);
+      }
+    );
+
+    // Stop receiving updates
+    subscription.unsubscribe();
+    ```
+  </Tab>
+  <Tab title="Raw WebSocket">
+    ```typescript
+    // Subscribe
+    ws.send(JSON.stringify({
+      method: 'subscribe',
+      subscription: {
+        type: 'l2Book',
+        market: 0,
+        ps: 1000000  // scaled price step
+      }
+    }));
+
+    // Unsubscribe
+    ws.send(JSON.stringify({
+      method: 'unsubscribe',
+      subscription: {
+        type: 'l2Book',
+        market: 0,
+        ps: 1000000
+      }
+    }));
+    ```
+  </Tab>
+  <Tab title="Message Format">
+    ```json
+    {
+      "channel": "l2Book",
+      "data": {
+        "market": 0,
+        "ps": 1000000,
+        "bids": [
+          { "px": "103.44", "sz": "125.5" },
+          { "px": "103.43", "sz": "250.0" }
+        ],
+        "asks": [
+          { "px": "103.46", "sz": "100.0" },
+          { "px": "103.47", "sz": "200.0" }
+        ]
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `marketIndex` | number | Numeric market identifier |
+| `priceStep` | number | Price aggregation granularity (e.g. `0.01`) |
+
+### `trades` — Real-Time Trade Events
+
+Receive a notification each time a trade is executed on a market. Each message delivers an array of one or more trades.
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    const subscription = subscriptions.subscribeToTrades(
+      0,  // marketIndex
+      (trades) => {
+        trades.forEach(trade => {
+          const direction = trade.side === 'B' ? 'BUY' : 'SELL';
+          console.log(`${direction} ${trade.sz} @ ${trade.px}`);
+        });
+      }
+    );
+    ```
+  </Tab>
+  <Tab title="Raw WebSocket">
+    ```typescript
+    ws.send(JSON.stringify({
+      method: 'subscribe',
+      subscription: {
+        type: 'trades',
+        market: 0
+      }
+    }));
+    ```
+  </Tab>
+  <Tab title="Message Format">
+    ```json
+    {
+      "channel": "trades",
+      "data": [
+        {
+          "market": 0,
+          "px": "103.45",
+          "sz": "10.5",
+          "side": "B",
+          "time": 1704067200000,
+          "oid": "123456789",
+          "txId": "5KQw..."
+        }
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `marketIndex` | number | Numeric market identifier |
+
+### `allMids` — Mid Prices for All Markets
+
+Receive a price update containing the current mid price for every active market whenever any price changes. This channel requires no parameters.
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    const subscription = subscriptions.subscribeToAllMids((mids) => {
+      console.log('SOL-USDC mid price:', mids['0']);
+    });
+    ```
+  </Tab>
+  <Tab title="Raw WebSocket">
+    ```typescript
+    ws.send(JSON.stringify({
+      method: 'subscribe',
+      subscription: {
+        type: 'allMids'
+      }
+    }));
+    ```
+  </Tab>
+  <Tab title="Message Format">
+    ```json
+    {
+      "channel": "allMids",
+      "data": {
+        "0": "103.45",
+        "1": "0.00001234"
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### `candle` — Live OHLCV Updates
+
+Receive updates to the current open candle as trades arrive. The `data` object contains the candle that is currently building for the given interval.
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    import { api } from '@fibe/sdk';
+
+    const subscription = subscriptions.subscribeToCandle(
+      0,                        // marketIndex
+      api.CandleInterval.Min1,  // interval
+      (candle) => {
+        console.log(`O: ${candle.o}  H: ${candle.h}  L: ${candle.l}  C: ${candle.c}`);
+      }
+    );
+    ```
+  </Tab>
+  <Tab title="Raw WebSocket">
+    ```typescript
+    ws.send(JSON.stringify({
+      method: 'subscribe',
+      subscription: {
+        type: 'candle',
+        market: 0,
+        interval: '1m'
+      }
+    }));
+    ```
+  </Tab>
+  <Tab title="Message Format">
+    ```json
+    {
+      "channel": "candle",
+      "data": {
+        "market": 0,
+        "t": 1704067200000,
+        "T": 1704067259999,
+        "o": "103.00",
+        "h": "103.50",
+        "l": "102.80",
+        "c": "103.45",
+        "bv": "125.5",
+        "qv": "12984.67",
+        "n": 23
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `marketIndex` | number | Numeric market identifier |
+| `interval` | CandleInterval | One of: `1m`, `3m`, `5m`, `15m`, `30m`, `1h`, `2h`, `4h`, `8h`, `12h`, `1d`, `3d`, `1w`, `1M` |
+
+### `orderUpdates` — User Order Status Changes
+
+Subscribe to live updates for every order belonging to a specific wallet address. Use this channel to build real-time order management UIs without polling `getOpenOrders`.
+
+<Tabs>
+  <Tab title="SDK">
+    ```typescript
+    const subscription = subscriptions.subscribeToOrderUpdates(
+      'user_wallet_address',
+      (data) => {
+        data.orders.forEach(order => {
+          console.log(`Order ${order.oid} → ${order.status}`);
+        });
+      }
+    );
+    ```
+  </Tab>
+  <Tab title="Raw WebSocket">
+    ```typescript
+    ws.send(JSON.stringify({
+      method: 'subscribe',
+      subscription: {
+        type: 'orderUpdates',
+        user: 'user_wallet_address'
+      }
+    }));
+    ```
+  </Tab>
+  <Tab title="Message Format">
+    ```json
+    {
+      "channel": "orderUpdates",
+      "data": {
+        "user": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+        "orders": [
+          {
+            "market": 0,
+            "oid": "1704067200000",
+            "type": "L",
+            "px": "100.00",
+            "side": "B",
+            "origSz": "10.0",
+            "sz": "5.0",
+            "status": "O",
+            "txId": "5KQw...",
+            "createdAt": 1704067200000,
+            "updatedAt": 1704067300000
+          }
+        ]
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `user` | string | The wallet address (base58) to track |
+
+---
+
+## Connection Management
+
+### Ping / Pong
+
+The SDK automatically sends a ping every 15 seconds and validates the pong response to keep the connection alive. If you use a raw WebSocket connection, implement your own keepalive:
+
+```typescript
+// Send a ping every 15 seconds
+setInterval(() => {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ method: 'ping' }));
+  }
+}, 15000);
+
+// Confirm the connection is alive by handling the pong
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  if (message.channel === 'pong') {
+    // Connection is healthy
+  }
+};
+```
+
+### Auto-Reconnection (SDK)
+
+When you use the SDK, disconnections trigger an automatic reconnection with exponential backoff:
+
+| Setting | Value |
+|---------|-------|
+| Initial retry delay | 1 second |
+| Maximum retry delay | 30 seconds |
+| Maximum attempts | 5 |
+
+All active subscriptions are automatically restored once the connection is re-established.
+
+### Manual Reconnection (Raw WebSocket)
+
+If you manage your own WebSocket connection, implement reconnection logic in the `onclose` handler and resubscribe to all channels on reconnect:
+
+```typescript
+function connect() {
+  const ws = new WebSocket('wss://api.fibe.com/ws');
+
+  ws.onopen = () => {
+    console.log('Connected — subscribing to channels');
+
+    // Resubscribe to all required channels
+    ws.send(JSON.stringify({
+      method: 'subscribe',
+      subscription: { type: 'allMids' }
+    }));
+  };
+
+  ws.onclose = () => {
+    console.log('Disconnected — attempting reconnect in 5s');
+    setTimeout(connect, 5000);
+  };
+}
+
+connect();
+```
+
+For more sophisticated retry logic, use exponential backoff to avoid overwhelming the server:
+
+```typescript
+let reconnectAttempt = 0;
+
+function getReconnectDelay(): number {
+  const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 30000);
+  reconnectAttempt++;
+  return delay;
+}
+
+function onConnectedSuccessfully(): void {
+  reconnectAttempt = 0; // Reset counter on successful connection
+}
+```
+
+---
+
+## Rate Limits
+
+| Resource | Limit |
+|----------|-------|
+| WebSocket connections | 100 per IP |
+| Active subscriptions | 1,000 per IP |
+| Messages sent to server | 2,000 per minute (across all connections) |
+| User-specific subscriptions | 10 unique wallet addresses |
+
+---
+
+## Best Practices
+
+Keep these guidelines in mind when building applications on top of the Fibe WebSocket API:
+
+<CardGroup cols={2}>
+  <Card title="Subscribe selectively" icon="filter">
+    Only subscribe to the channels you actively consume. Each subscription uses server-side resources and counts against your IP's subscription limit.
+  </Card>
+  <Card title="Handle disconnections gracefully" icon="plug-circle-xmark">
+    Use the SDK's built-in reconnection, or implement your own with exponential backoff. Never assume a WebSocket connection is permanently stable.
+  </Card>
+  <Card title="Process messages asynchronously" icon="bolt">
+    Offload heavy computation (charting, aggregation, strategy evaluation) to worker threads or async queues. Blocking the message handler introduces latency.
+  </Card>
+  <Card title="Validate message data" icon="shield-check">
+    Always confirm the expected fields are present in each message before accessing them. Defensive parsing prevents runtime errors from unexpected schema changes.
+  </Card>
+  <Card title="Use the SDK" icon="cube">
+    The TypeScript SDK handles reconnection, ping/pong heartbeats, and subscription state management automatically — reducing the code you need to maintain.
+  </Card>
+  <Card title="Exponential backoff" icon="arrow-up-right-dots">
+    When reconnecting manually, back off exponentially from 1 s up to 30 s before retrying. Immediate reconnect loops can trigger rate limiting.
+  </Card>
+</CardGroup>
+
+---
+
+## End-to-End Example
+
+The following example opens three simultaneous subscriptions — orderbook, trades, and all-mids — runs for 60 seconds, then cleanly unsubscribes from each:
+
+```typescript
+import { api } from '@fibe/sdk';
+
+async function main() {
+  // Establish a managed WebSocket connection
+  const subscriptions = await api.WebSocketSubscriptions.create(
+    'wss://api.fibe.com/ws',
+    (error) => console.error('WebSocket error:', error)
+  );
+
+  let bestBid = '0';
+  let bestAsk = '0';
+
+  // Stream the SOL/USDC orderbook
+  const orderbookSub = subscriptions.subscribeToL2Book(0, 0.01, (data) => {
+    if (data.bids.length > 0) bestBid = data.bids[0].px;
+    if (data.asks.length > 0) bestAsk = data.asks[0].px;
+
+    const spread = parseFloat(bestAsk) - parseFloat(bestBid);
+    console.log(`Bid: ${bestBid} | Ask: ${bestAsk} | Spread: ${spread.toFixed(4)}`);
+  });
+
+  // Stream individual trades
+  const tradesSub = subscriptions.subscribeToTrades(0, (trades) => {
+    trades.forEach(trade => {
+      const side = trade.side === 'B' ? 'BUY ' : 'SELL';
+      console.log(`[TRADE] ${side} ${trade.sz} @ ${trade.px}`);
+    });
+  });
+
+  // Stream mid prices for all markets
+  const midsSub = subscriptions.subscribeToAllMids((mids) => {
+    console.log('[MIDS] SOL-USDC:', mids['0']);
+  });
+
+  // Run for 60 seconds, then clean up
+  setTimeout(() => {
+    console.log('Unsubscribing from all channels...');
+    orderbookSub.unsubscribe();
+    tradesSub.unsubscribe();
+    midsSub.unsubscribe();
+    console.log('Done.');
+  }, 60000);
+}
+
+main().catch(console.error);
+```

@@ -1,0 +1,71 @@
+---
+title: "Swap Tokens on Fibe: Fast and Simple Solana Exchange"
+sidebarTitle: "Swap"
+description: "Swap any supported Solana token pair instantly on Fibe. Set your slippage tolerance, review the quote, and confirm — all in a few clicks."
+---
+
+Fibe's swap feature lets you exchange one Solana token for another in seconds. Under the hood, Fibe routes your trade through the deepest available liquidity pools on-chain, so you get a competitive price without leaving the platform. Whether you're moving from SOL to USDC or exploring any other supported pair, the swap interface keeps the process straightforward and transparent.
+
+## How to Swap Tokens
+
+<Steps>
+  <Step title="Select your input token">
+    Open the **Swap** tab from the main navigation. Click the token selector on the top field and choose the token you want to sell. Your connected wallet balance appears next to each token.
+  </Step>
+  <Step title="Enter the amount">
+    Type the amount you want to sell, or click **Max** to use your full available balance. Fibe automatically calculates the expected output as you type.
+  </Step>
+  <Step title="Select your output token">
+    Click the token selector on the bottom field and choose the token you want to receive. Fibe fetches a live quote immediately.
+  </Step>
+  <Step title="Review the quote">
+    Before confirming, check the quote summary:
+    - **Exchange rate** — the price ratio between the two tokens
+    - **Price impact** — how much your trade moves the market price
+    - **Estimated fees** — network and protocol fees deducted from the output
+    - **Minimum received** — the lowest amount you'll receive after applying your slippage tolerance
+
+    If you're happy with the quote, proceed to the next step.
+  </Step>
+  <Step title="Confirm the swap">
+    Click **Swap**. A confirmation modal appears showing the final quote details. Review them once more and click **Confirm Swap**.
+  </Step>
+  <Step title="Sign the transaction">
+    Your connected Solana wallet (e.g. Phantom, Solflare) opens a signing prompt. Review the transaction details and click **Approve** to broadcast it to the Solana network.
+  </Step>
+  <Step title="View your confirmation">
+    Once the transaction is confirmed on-chain, Fibe displays a success screen with a link to the Solana Explorer transaction. Your updated token balances appear in your wallet immediately.
+  </Step>
+</Steps>
+
+## Slippage Tolerance
+
+Slippage is the difference between the price you see when you submit a swap and the price at which it actually executes. On a live market, prices move between the moment you request a quote and when the transaction lands on-chain — slippage tolerance sets the maximum deviation you're willing to accept.
+
+To adjust slippage tolerance:
+
+1. Click the **Settings** icon (⚙) in the top-right corner of the swap card.
+2. Choose a preset — **0.1%**, **0.5%**, or **1.0%** — or enter a custom value.
+3. Click outside the settings panel to save.
+
+<Tip>
+  For most token pairs with healthy liquidity, 0.5% slippage is sufficient. For volatile or low-liquidity tokens, you may need to increase it to 1–2% to avoid failed transactions.
+</Tip>
+
+Setting slippage too low means your swap may fail if the price moves even slightly. Setting it too high exposes you to worse execution than expected. Find the balance that matches the liquidity of your chosen pair.
+
+## Swap Routing
+
+Fibe automatically finds the best execution path for your swap by analysing available liquidity sources on Solana. Rather than sending your entire trade through a single pool, the router may split your order across multiple pools or hop through an intermediate token to minimise price impact and maximise your output amount.
+
+You don't need to configure routing manually — Fibe handles it for you. The route used for your swap is displayed in the quote summary before you confirm.
+
+<Warning>
+  Large swaps relative to pool size can cause significant **price impact**, meaning the actual exchange rate shifts unfavourably as your order fills. If the price impact shown in your quote exceeds 2–3%, consider splitting your swap into smaller chunks over time, or use a limit order to specify the exact price you want.
+</Warning>
+
+## Better Price Control with Limit Orders
+
+<Tip>
+  If you're not in a hurry and want to guarantee a specific exchange rate, use a **limit order** instead of a swap. Limit orders let you set the exact price at which your trade executes, and they stay open on-chain until filled or cancelled. See [Market and Limit Orders](/trading/market-and-limit-orders) for details.
+</Tip>

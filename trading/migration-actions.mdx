@@ -1,0 +1,67 @@
+---
+title: "Managing Token Migrations and Transitions on Fibe DEX"
+sidebarTitle: "Migrations"
+description: "When a token you hold undergoes a migration on Solana, Fibe surfaces the action so you can participate, swap out, or dismiss — without missing the window."
+---
+
+Token migrations happen when a project upgrades its smart contract, rebrands its token, or moves liquidity to a new pool or program. When a token you hold is involved in one of these events, Fibe detects the migration and surfaces a **Migration Action** notification in your portfolio. This gives you the information and tools you need to respond quickly — whether that means exchanging your old tokens for the new contract, swapping out entirely, or simply dismissing the alert if it doesn't affect you.
+
+## What Triggers a Migration Action
+
+Fibe monitors on-chain activity and token metadata to identify migration events that are relevant to your holdings. A Migration Action notification is created when:
+
+- **Contract upgrade** — a project deploys a new token contract and deprecates the old one, requiring holders to exchange old tokens for new ones
+- **Rebrand or token swap** — a project changes its token name, symbol, or mint address and opens a swap program for existing holders
+- **Liquidity migration** — a project moves liquidity from one AMM pool or protocol to another, affecting how the token can be traded
+- **Program authority change** — the underlying Solana program controlling the token mint is updated, potentially affecting transferability or utility
+
+Not all migrations require action — some are purely informational. Fibe classifies each notification so you can distinguish between **action required** and **informational** events at a glance.
+
+## How to Respond to a Migration Action
+
+When a migration is detected, you have three options:
+
+- **Approve and participate** — exchange your old tokens for new-contract tokens using the project's official migration program. Fibe routes this through the verified migration contract.
+- **Swap out of the old token** — if you'd rather not hold the new token, use Fibe's swap or Instant Trade to exit your position before the migration deadline.
+- **Dismiss** — if the migration doesn't affect your strategy, or if you've already taken action outside Fibe, dismiss the notification to clear it from your feed.
+
+## How to Complete a Migration Action
+
+<Steps>
+  <Step title="Open the Migration Action notification">
+    A banner or badge appears on your **Portfolio** page and in the notification centre whenever a Migration Action is pending. Click the notification or navigate to **Portfolio → Alerts → Migrations** to see full details.
+  </Step>
+  <Step title="Review the migration details">
+    The migration card shows:
+    - **Token affected** — the name, symbol, and current mint address of the token in your wallet
+    - **New token** — the name, symbol, and mint address of the replacement token (if applicable)
+    - **Migration deadline** — the date and time by which action must be taken (if the project has set one)
+    - **Migration type** — contract upgrade, liquidity migration, or rebrand
+    - **Official migration program** — the verified on-chain program address used for the exchange
+
+    Read these details carefully before choosing an action.
+  </Step>
+  <Step title="Choose your response">
+    Select one of the three response options presented on the migration card:
+    - **Migrate Tokens** — proceed with the official token swap to the new contract
+    - **Swap Out** — open the Fibe swap interface pre-filled with the old token as the input
+    - **Dismiss** — mark the notification as seen without taking action
+  </Step>
+  <Step title="Confirm the migration transaction">
+    If you selected **Migrate Tokens**, review the exchange details — the amount of old tokens you're sending and the new tokens you'll receive. Click **Confirm Migration** when satisfied.
+  </Step>
+  <Step title="Sign in your wallet">
+    Your Solana wallet opens a signing prompt for the migration transaction. Verify that the destination program address matches the **Official migration program** shown in step 2, then click **Approve**.
+  </Step>
+  <Step title="Verify your new balance">
+    Once the transaction confirms on-chain, your Portfolio updates to reflect the new token balance. The old token is deducted and the new token appears in its place. A confirmation summary with the Solana Explorer link is available in your notification history.
+  </Step>
+</Steps>
+
+<Warning>
+  Some migration windows are **time-limited**. If a project sets a deadline for its token swap or liquidity migration, tokens that have not been migrated by that date may become untradeable or lose value entirely. Always check the **Migration deadline** field on the notification card and act well before the cutoff — on-chain transactions can occasionally be delayed during periods of network congestion.
+</Warning>
+
+<Tip>
+  Keep your Fibe notification settings enabled so you receive in-app and (if configured) email alerts as soon as a migration affecting your holdings is detected. The earlier you see the notification, the more time you have to evaluate your options and act without rushing. You can manage notification preferences in **Settings → Notifications**.
+</Tip>
